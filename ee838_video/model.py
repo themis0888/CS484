@@ -21,7 +21,7 @@ class SISR:
 		self.height = config.im_size
 		self.width = config.im_size
 		self.channels = 3
-		self.n_classes = config.n_classes
+		self.lr = config.lr
 		self.num_block = int(np.log(config.im_size/7)/np.log(2))
 		self.layers = ['conv1', 
 		'res1_conv1', 'res1_conv2', 'res2_conv1', 'res2_conv2', 
@@ -73,7 +73,7 @@ class SISR:
 
 		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
 		total_var = tf.global_variables() 
-		self.optimizer = tf.train.AdamOptimizer(0.001, epsilon=0.01).minimize(self.cost)
+		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.01).minimize(self.cost)
 		
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
