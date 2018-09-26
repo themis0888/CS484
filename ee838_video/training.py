@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/mscoco/')
 parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/mscoco/')
 parser.add_argument('--sample_path', type=str, dest='sample_path', default='./sample')
+parser.add_argument('--log_path', type=str, dest='log_path', default='./log')
 parser.add_argument('--model_path', type=str, dest='model_path', default='/shared/data/models/')
 parser.add_argument('--epoch', type=int, dest='epoch', default=1000)
 
@@ -57,6 +58,10 @@ model = SISR(sess, config, 'SISR')
 
 if not os.path.exists(config.sample_path):
 	os.mkdir(config.sample_path)
+if not os.path.exists(config.log_path):
+	os.mkdir(config.log_path)
+
+log_file = open(os.path.join(config.log_path, 'log.txt'), 'w')
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
@@ -115,10 +120,12 @@ for epoch in range(config.epoch):
 				psnr += temp_psnr
 				ssim += temp_ssim
 
-			print('Step:', '%05dk' % (counter),
-				'\tAvg. cost =', '{:.5f}'.format(cost_val),
-				'\tPSNR = {:.3}'.format(psnr/config.batch_size),
-				'\tSSIM = {:.3}'.format(ssim/config.batch_size))
+			log = ('Step: {:05d}k'.format(counter) +
+				'\tCost: {:.3f}'.format(cost_val) +
+				'\tPSNR: {:.1}'.format(psnr/config.batch_size) +
+				'\tSSIM: {:.3}'.format(ssim/config.batch_size))
+			print(log)
+			log_file.write(log + '\n')
 
 		# Save the model
 		if np.mod(counter, config.save_freq) == 0:
