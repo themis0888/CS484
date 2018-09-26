@@ -1,6 +1,9 @@
 import tensorflow as tf
 import os, random
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import pdb
 
 
@@ -85,6 +88,30 @@ class SISR:
 	def test(self, x_test, training=False):
 		return self.sess.run(self.output_data, 
 			feed_dict={self.X: x_test, self.training: training})
+	
+	def visualize(self, input_files, target_files, sample_path, counter, is_testing = False, args = None):
+
+		num_input = 4
+		num_col = 3
+		fig=plt.figure(figsize=(8, 8))
+
+		for i in range(num_input):
+
+			input_file = input_files[i]
+			output_file = sess.run(self.output_data, 
+				feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
+			output_file = np.minimum(np.maximum(0,output_file))
+			target_file = target_files[i]
+			#pdb.set_trace()
+
+			fig.add_subplot(num_input, num_col, num_col*i+1)
+			plt.imshow(input_file)
+			fig.add_subplot(num_input, num_col, num_col*i+2)
+			plt.imshow(output_file)
+			fig.add_subplot(num_input, num_col, num_col*i+3)
+			plt.imshow(target_file)
+
+		plt.savefig(os.path.join(sample_path, '{0:06d}k_step.jpg'.format(counter)))
 
 
 	def residual_block(self, input_layer, num_filter, kernel):
