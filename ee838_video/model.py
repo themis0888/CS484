@@ -93,14 +93,16 @@ class SISR:
 
 		num_input = 4
 		num_col = 3
-		fig=plt.figure(figsize=(8, 8))
+		fig=plt.figure(figsize=(16, 16))
+
+		output_files = self.sess.run(self.output_data, 
+			feed_dict={self.X: input_files, self.Y: target_files, self.training: True})
+		output_files = np.minimum(1, np.maximum(0, output_files))
 
 		for i in range(num_input):
 
 			input_file = input_files[i]
-			output_file = sess.run(self.output_data, 
-				feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
-			output_file = np.minimum(np.maximum(0,output_file))
+			output_file = output_files[i]
 			target_file = target_files[i]
 			#pdb.set_trace()
 
@@ -112,6 +114,8 @@ class SISR:
 			plt.imshow(target_file)
 
 		plt.savefig(os.path.join(sample_path, '{0:06d}k_step.jpg'.format(counter)))
+		
+		return output_files
 
 
 	def residual_block(self, input_layer, num_filter, kernel):

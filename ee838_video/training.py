@@ -37,7 +37,7 @@ sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 import os, random
 import numpy as np
 from model import *
-import skimage as sk
+import skimage.measure as skms
 import data_loader
 import pdb
 
@@ -53,6 +53,9 @@ target_size = [config.ratio * height, config.ratio * width, channels]
 model = SISR(sess, config, 'SISR')
 
 # -------------------- Data maniging -------------------- #
+
+if not os.path.exists(config.sample_path):
+	os.mkdir(config.sample_path)
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
@@ -101,9 +104,20 @@ for epoch in range(config.epoch):
 		counter += 1
 
 		if np.mod(counter, config.print_freq) == 0:
-			model.visualize(Xbatch, Ybatch, config.sample_path, counter)
+			
+			out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
+			psnr, ssim = 0, 0
+			Ybatch = Ybatch.astype('float32')
+			for i in range(config.batch_size):
+				temp_psnr = skms.compare_psnr(Ybatch[i], out_batch[i], multichannel=True)
+				temp_ssim = skms.compare_ssim(Ybatch[i], out_batch[i])
+				psnr += temp_psnr
+				ssim += temp_ssim
+
 			print('Step:', '%05dk' % (counter),
-				'\tAvg. cost =', '{:.5f}'.format(cost_val))
+				'\tAvg. cost =', '{:.5f}'.format(cost_val),
+				'\tPSNR = {:.3}'.format(psnr),
+				'\tSSIM = {:.3}'.format(ssim))
 
 		# Save the model
 		if np.mod(counter, config.save_freq) == 0:
