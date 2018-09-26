@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=0 python -i 111_Training.py \
+CUDA_VISIBLE_DEVICES=1 python -i training.py \
 --data_path=/home/siit/navi/data/input_data/cifar/ \
 --meta_path=/home/siit/navi/data/meta_data/cifar/ \
 --n_classes=10 --im_size=224 --batch_size=10 \
@@ -12,6 +12,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/mscoco/')
 parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/mscoco/')
+parser.add_argument('--sample_path', type=str, dest='sample_path', default='./sample')
 parser.add_argument('--model_path', type=str, dest='model_path', default='/shared/data/models/')
 parser.add_argument('--epoch', type=int, dest='epoch', default=1000)
 
@@ -111,5 +112,34 @@ for epoch in range(config.epoch):
 			print('Model ')
 	
 
+def visualize(self, input_files, target_files, sample_dir, counter, is_testing = False, args = None):
+
+	num_input = 4
+	num_col = 3
+	fig=plt.figure(figsize=(8, 8))
+
+	for i in range(num_input):
+
+		input_files = list(dataA[(self.batch_size)*i:(self.batch_size)*(i+1)])
+		sample_images = [load_test_data(input_file, arg.im_size) for input_file in input_files]
+		sample_images = np.array(sample_images).astype(np.float32)
+		#pdb.set_trace()
+
+		# fake_A, fake_B, rec_A, rec_B = self.sess.run([self.fake_A, self.fake_B, self.fake_A_, self.fake_B_], feed_dict={self.real_data: sample_images})
+		OtoT = self.sess.run(A2B, feed_dict={input_A: sample_images})
+		OtoTtoO = self.sess.run(B2A, feed_dict={input_B: OtoT})
+		fig.add_subplot(num_input, num_col, num_col*i+1)
+		plt.imshow((sample_images[0,:,:,:3]+1)/2)
+		fig.add_subplot(num_input, num_col, num_col*i+2)
+		plt.imshow((OtoT[0,:,:,:3]+1)/2)
+		key_layer = np.repeat(np.expand_dims(OtoT[0,:,:,-1], axis=-1), 3, axis=2)
+
+		fig.add_subplot(num_input, num_col, num_col*i+3)
+		plt.imshow((OtoT[0,:,:,:3]+key_layer+2)/4)
+		fig.add_subplot(num_input, num_col, num_col*i+4)
+		plt.imshow((OtoTtoO[0,:,:,:3]+1)/2)
+
+
+	plt.savefig(os.path.join(sample_dir, 'A_{0:06d}.jpg'.format(int(counter/self.print_freq))))
 # -------------------- Testing -------------------- #
 
