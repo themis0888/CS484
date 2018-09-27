@@ -67,6 +67,7 @@ train_LR_files = [os.path.join(dp, f)
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
 		for f in filenames if 'test/LR' in dp]
+test_LR_files.sort()
 
 batch_size = config.batch_size
 
@@ -119,7 +120,7 @@ if config.mode == 'training':
 					psnr += temp_psnr
 					ssim += temp_ssim
 
-				log = ('Step: {:05d}k'.format(counter) +
+				log = ('Step: {:05d}'.format(counter) +
 					'\tCost: {:.3f}'.format(cost_val) +
 					'\tPSNR: {:2.1f}'.format(psnr/config.batch_size) +
 					'\tSSIM: {:.3f}'.format(ssim/config.batch_size))
@@ -141,11 +142,13 @@ elif config.mode == 'testing':
 	counter = 0
 
 	num_file = len(test_LR_files)
-
+	batch_size = 1
 	total_batch = int(num_file / batch_size)
 	total_cost = 0
 	final_acc = 0
-
+	total_psnr = 0
+	total_ssim = 0
+	
 	for i in range(total_batch):
 		# Get the batch as [batch_size, 64, 64, 3] and [batch_size, n_classes] ndarray
 
@@ -165,15 +168,24 @@ elif config.mode == 'testing':
 		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
 		psnr, ssim = 0, 0
 		Ybatch = Ybatch.astype('float32')
-		for i in range(config.batch_size):
-			temp_psnr = skms.compare_psnr(Ybatch[i], out_batch[i])
-			temp_ssim = skms.compare_ssim(Ybatch[i], out_batch[i], multichannel=True)
+		for j in range(batch_size):
+			temp_psnr = skms.compare_psnr(Ybatch[j], out_batch[j])
+			temp_ssim = skms.compare_ssim(Ybatch[j], out_batch[j], multichannel=True)
 			psnr += temp_psnr
 			ssim += temp_ssim
 
-		log = ('Step: {:05d}k'.format(counter) +
-			'\tPSNR: {:2.1f}'.format(psnr/config.batch_size) +
-			'\tSSIM: {:.3f}'.format(ssim/config.batch_size))
+		log = ('File: {:s}'.format(os.path.basename(test_LR_files[i])) +
+			'\tPSNR: {:2.1f}'.format(psnr) +
+			'\tSSIM: {:.3f}'.format(ssim))
 		print(log)
+		total_psnr += psnr
+		total_ssim += ssim 
 		log_file.write(log + '\n')
+
+	log = ('\nTotal summary \n'+
+		'Avg.PSNR = {:2.2f} \n'.format(total_psnr/num_file) +
+		'Avg.SSIM = {:.4f}'.format(total_ssim/num_file))
+	print(log)
+	log_file.write(log + '\n')
+	log_file.close()
 

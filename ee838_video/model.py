@@ -93,7 +93,7 @@ class SISR:
 	
 	def visualize(self, input_files, target_files, sample_path, counter, is_testing = False, args = None):
 
-		num_input = 4
+		num_input = min(4, len(input_files))
 		num_col = 3
 		fig=plt.figure(figsize=(16, 16))
 
