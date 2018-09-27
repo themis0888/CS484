@@ -71,7 +71,7 @@ def make_dict_file(path, save_path, label_list, extensions, path_label = False, 
 
 # queue_data(lst, ['0', '1', '2'], norm=True, convert = 'rgb2gray')
 # queue_data does not consider the batch size but return the all data on the list.
-def queue_data_list(file_list, label_list, im_size = [28,28], label_processed = False, norm=True, convert = None):
+def queue_data_list(file_list, label_list, im_size = [28,28], label_processed = True, norm=True, convert = None):
 	# Batch frame fit into the image size 
 	batch_size = len(file_list)
 	im_batch = np.zeros([batch_size] + im_size)
@@ -105,9 +105,11 @@ def queue_data_list(file_list, label_list, im_size = [28,28], label_processed = 
 	return im_batch, input_labels, gt_labels
 
 
-def queue_data_dict(file_list, im_size = [28,28], label_processed = False, norm=True, convert = None):
+def queue_data_dict(file_list, im_size = [28,28], norm=True, convert = None, image_resize = True):
 	# Batch frame fit into the image size 
 	batch_size = len(file_list)
+	if not image_resize:
+		im_size = list(skio.imread(file_list[0]).shape)
 	im_batch = np.zeros([batch_size] + im_size)
 	gt_labels = []
 	# Reading from the list

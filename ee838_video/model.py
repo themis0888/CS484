@@ -46,9 +46,10 @@ class SISR:
 		self.n = 5
 		self.reuse = False
 
-		self.X = tf.placeholder(tf.float32, [None, self.width, self.height, self.channels])
+		self.X = tf.placeholder(tf.float32, [None, None, None, self.channels]) # [None, self.height, self.width, self.channels])
 		self.Y = tf.placeholder(tf.float32, 
-		[None, self.ratio*self.width, self.ratio*self.height, self.channels])
+			[None, None, None, self.channels])
+			# [None, self.ratio*self.height, self.ratio*self.width, self.channels])
 		
 		input_data = self.X
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
@@ -72,15 +73,16 @@ class SISR:
 
 
 		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
-		total_var = tf.global_variables() 
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.01).minimize(self.cost)
 		
+		self.total_var = tf.global_variables() 
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
-		self.saver = tf.train.Saver(total_var)
+		self.saver = tf.train.Saver(self.total_var)
+		"""
 		if config.mode == 'testing':
 			self.saver.restore(self.sess, tf.train.latest_checkpoint(config.checkpoint_path))
-
+		"""
 		tf.train.start_queue_runners(sess=self.sess)
 
 	def train(self, x_data, y_data, training=True):
@@ -93,7 +95,7 @@ class SISR:
 	
 	def visualize(self, input_files, target_files, sample_path, counter, is_testing = False, args = None):
 
-		num_input = min(4, len(input_files))
+		num_input = min(3, len(input_files))
 		num_col = 3
 		fig=plt.figure(figsize=(16, 16))
 
@@ -116,7 +118,8 @@ class SISR:
 			plt.imshow(target_file)
 
 		plt.savefig(os.path.join(sample_path, '{0:06d}k_step.jpg'.format(counter)))
-		
+		plt.close(fig)
+
 		return output_files
 
 

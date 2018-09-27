@@ -17,6 +17,7 @@ parser.add_argument('--model_path', type=str, dest='model_path', default='/share
 parser.add_argument('--epoch', type=int, dest='epoch', default=1000)
 
 parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
+parser.add_argument('--resize', type=bool, dest='resize', default=True)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
 parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
@@ -51,8 +52,6 @@ channels = 3
 im_size = [height, width, channels]
 target_size = [config.ratio * height, config.ratio * width, channels]
 
-model = SISR(sess, config, 'SISR')
-
 # -------------------- Data maniging -------------------- #
 
 if not os.path.exists(config.sample_path):
@@ -71,14 +70,12 @@ test_LR_files.sort()
 
 batch_size = config.batch_size
 
-
-
-
 # If you want to debug the model, write the following command on the console
 # log_ = model.sess.run([model.logits], feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
 
 if config.mode == 'training':
 	# -------------------- Training -------------------- #
+	model = SISR(sess, config, 'SISR')
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
 	for epoch in range(config.epoch):
@@ -95,13 +92,13 @@ if config.mode == 'training':
 			# Get the batch as [batch_size, 28,28] and [batch_size, n_classes] ndarray
 
 			Xbatch = data_loader.queue_data_dict(
-				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, config.label_processed)
+				train_LR_files[i*batch_size:(i+1)*batch_size], im_size)
 
 			train_HR_files = [os.path.join(config.data_path, 'train/HR', os.path.basename(file_path))
 				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
 			
 			Ybatch = data_loader.queue_data_dict(
-				train_HR_files, target_size, config.label_processed)
+				train_HR_files, target_size)
 
 			_, cost_val = model.train(Xbatch, Ybatch)
 
@@ -148,23 +145,28 @@ elif config.mode == 'testing':
 	final_acc = 0
 	total_psnr = 0
 	total_ssim = 0
+	config.resize = False
 	
 	for i in range(total_batch):
 		# Get the batch as [batch_size, 64, 64, 3] and [batch_size, n_classes] ndarray
 
 		Xbatch = data_loader.queue_data_dict(
-			test_LR_files[i*batch_size:(i+1)*batch_size], im_size, config.label_processed)
+			test_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize= config.resize)
+
+		_, config.height, config.width, _ = Xbatch.shape
 
 		test_HR_files = [os.path.join(config.data_path, 'test/HR', os.path.basename(file_path))
 			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
-			test_HR_files, target_size, config.label_processed)
+			test_HR_files, [config.height*config.ratio, config.width*config.ratio, channels])
 
 		# output_data = model.test(Xbatch, Ybatch)
-
+		
+		model = SISR(sess, config, 'SISR')
+		
 		counter += 1
-			
+
 		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
 		psnr, ssim = 0, 0
 		Ybatch = Ybatch.astype('float32')
