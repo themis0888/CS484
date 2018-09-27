@@ -1,9 +1,7 @@
 """
 CUDA_VISIBLE_DEVICES=1 python -i training.py \
---data_path=/home/siit/navi/data/input_data/cifar/ \
---meta_path=/home/siit/navi/data/meta_data/cifar/ \
---n_classes=10 --im_size=224 --batch_size=10 \
---label_processed True \
+--data_path=/home/siit/navi/data/input_data/mscoco/ \
+--im_size=64 --batch_size=16 --ratio=2 \
 
 """
 import tensorflow as tf
@@ -122,8 +120,8 @@ for epoch in range(config.epoch):
 
 			log = ('Step: {:05d}k'.format(counter) +
 				'\tCost: {:.3f}'.format(cost_val) +
-				'\tPSNR: {:.1}'.format(psnr/config.batch_size) +
-				'\tSSIM: {:.3}'.format(ssim/config.batch_size))
+				'\tPSNR: {:2.1f}'.format(psnr/config.batch_size) +
+				'\tSSIM: {:.3f}'.format(ssim/config.batch_size))
 			print(log)
 			log_file.write(log + '\n')
 
