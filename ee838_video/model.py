@@ -118,7 +118,7 @@ class SISR:
 			plt.imshow(target_file)
 
 		plt.savefig(os.path.join(sample_path, '{0:06d}k_step.jpg'.format(counter)))
-		plt.close(fig)
+		plt.close()
 
 		return output_files
 

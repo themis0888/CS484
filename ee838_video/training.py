@@ -17,7 +17,7 @@ parser.add_argument('--model_path', type=str, dest='model_path', default='/share
 parser.add_argument('--epoch', type=int, dest='epoch', default=1000)
 
 parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
-parser.add_argument('--resize', type=bool, dest='resize', default=True)
+parser.add_argument('--resize', type=bool, dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
 parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
@@ -90,15 +90,15 @@ if config.mode == 'training':
 
 		for i in range(total_batch):
 			# Get the batch as [batch_size, 28,28] and [batch_size, n_classes] ndarray
-
+			cord = np.random.rand(2, batch_size)
 			Xbatch = data_loader.queue_data_dict(
-				train_LR_files[i*batch_size:(i+1)*batch_size], im_size)
+				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize = config.resize, crop_cord = cord)
 
 			train_HR_files = [os.path.join(config.data_path, 'train/HR', os.path.basename(file_path))
 				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
 			
 			Ybatch = data_loader.queue_data_dict(
-				train_HR_files, target_size)
+				train_HR_files, target_size, image_resize = config.resize, crop_cord = cord)
 
 			_, cost_val = model.train(Xbatch, Ybatch)
 

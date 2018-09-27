@@ -7,6 +7,7 @@ import os
 import numpy as np
 import skimage.io as skio
 import scipy.misc
+import pdb
 
 
 # extensions = ('.jpg', '.png')
@@ -105,30 +106,32 @@ def queue_data_list(file_list, label_list, im_size = [28,28], label_processed = 
 	return im_batch, input_labels, gt_labels
 
 
-def queue_data_dict(file_list, im_size = [28,28], norm=True, convert = None, image_resize = True):
+def queue_data_dict(file_list, im_size = [28, 28], norm=True, image_resize = True, crop_cord = None):
 	# Batch frame fit into the image size 
 	batch_size = len(file_list)
-	if not image_resize:
-		im_size = list(skio.imread(file_list[0]).shape)
-	im_batch = np.zeros([batch_size] + im_size)
+	imgs = []
 	gt_labels = []
 	# Reading from the list
 	for i in range(batch_size):
 		impath = file_list[i]
 		# return the index of the label 
-
+		#pdb.set_trace()
 		img = np.asarray(skio.imread(impath))
 		if img.ndim < 3:
 			img = np.expand_dims(img, axis = -1)
 			img = np.concatenate((img, img, img), axis = -1)
-		img = mat_resize(img, im_size)
-		im_batch[i] = img
+		if type(crop_cord) == np.ndarray:
+			img = img[int((img.shape[0]-im_size[0])*crop_cord[0,i]):int((img.shape[0]-im_size[0])*crop_cord[0,i])+im_size[0],
+				int((img.shape[1]-im_size[1])*crop_cord[1,i]):int((img.shape[1]-im_size[1])*crop_cord[1,i])+im_size[1]]
+		if image_resize: 
+			img = mat_resize(img, im_size)
+		imgs.append(img)
+	im_batch = np.zeros([batch_size] + list(imgs[0].shape))
+	for i in range(batch_size):
+		im_batch[i] = imgs[i]
 	if norm == True : 
 		im_batch /= 256
-	if convert == 'rgb2gray':
-		im_batch = np.mean(im_batch, axis=3)
-	# Label processing 
-	
+
 	return im_batch
 
 
