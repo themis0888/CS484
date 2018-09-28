@@ -79,10 +79,10 @@ class SISR:
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
 		self.saver = tf.train.Saver(self.total_var)
-		"""
-		if config.mode == 'testing':
+		
+		if config.mode == 'testing' or config.re_train:
 			self.saver.restore(self.sess, tf.train.latest_checkpoint(config.checkpoint_path))
-		"""
+		
 		tf.train.start_queue_runners(sess=self.sess)
 
 	def train(self, x_data, y_data, training=True):

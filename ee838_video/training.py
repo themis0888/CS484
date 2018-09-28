@@ -17,7 +17,7 @@ parser.add_argument('--model_path', type=str, dest='model_path', default='/share
 parser.add_argument('--epoch', type=int, dest='epoch', default=1000)
 
 parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
-parser.add_argument('--resize', type=bool, dest='resize', default=False)
+parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
 parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
@@ -28,6 +28,7 @@ parser.add_argument('--save_freq', type=int, dest='save_freq', default=1000)
 parser.add_argument('--print_freq', type=int, dest='print_freq', default=50)
 parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.96)
 
+parser.add_argument('--re_train', type=lambda x: x.lower() in ('true', '1'), dest='re_train', default=False)
 parser.add_argument('--mode', type=str, dest='mode', default='training')
 parser.add_argument('--load_checkpoint', type=bool, dest='load_checkpoint', default=False)
 parser.add_argument('--checkpoint_path', type=str, dest='checkpoint_path', default='./checkpoints')
