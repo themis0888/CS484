@@ -75,12 +75,14 @@ class SISR:
 		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.01).minimize(self.cost)
 		
-		self.total_var = tf.global_variables() 
+		
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
+		self.total_var = tf.global_variables() 
 		self.saver = tf.train.Saver(self.total_var)
 		
 		if config.mode == 'testing' or config.re_train:
+			self.saver = tf.train.Saver()
 			self.saver.restore(self.sess, tf.train.latest_checkpoint(config.checkpoint_path))
 		
 		tf.train.start_queue_runners(sess=self.sess)

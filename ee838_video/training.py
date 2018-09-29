@@ -20,13 +20,13 @@ parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
 parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
-parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
-parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
+parser.add_argument('--lr', type=float, dest='lr', default=0.001)
+parser.add_argument('--batch_size', type=int, dest='batch_size', default=8)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
 parser.add_argument('--save_freq', type=int, dest='save_freq', default=1000)
 parser.add_argument('--print_freq', type=int, dest='print_freq', default=50)
-parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.96)
+parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.45)
 
 parser.add_argument('--re_train', type=lambda x: x.lower() in ('true', '1'), dest='re_train', default=False)
 parser.add_argument('--mode', type=str, dest='mode', default='training')
@@ -37,6 +37,7 @@ config, unparsed = parser.parse_known_args()
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
 sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 
+from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ptck
 import os, random
 import numpy as np
 from model import *
@@ -136,6 +137,7 @@ if config.mode == 'training':
 
 	# -------------------- Testing -------------------- #
 elif config.mode == 'testing':
+	model = SISR(sess, config, 'SISR')
 	log_file = open(os.path.join(config.log_path, 'testing_log.txt'), 'w')
 	counter = 0
 
@@ -146,7 +148,6 @@ elif config.mode == 'testing':
 	final_acc = 0
 	total_psnr = 0
 	total_ssim = 0
-	config.resize = False
 	
 	for i in range(total_batch):
 		# Get the batch as [batch_size, 64, 64, 3] and [batch_size, n_classes] ndarray
@@ -163,8 +164,6 @@ elif config.mode == 'testing':
 			test_HR_files, [config.height*config.ratio, config.width*config.ratio, channels])
 
 		# output_data = model.test(Xbatch, Ybatch)
-		
-		model = SISR(sess, config, 'SISR')
 		
 		counter += 1
 
