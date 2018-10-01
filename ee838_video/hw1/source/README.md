@@ -9,6 +9,20 @@
 
 ## Usage
 
+Put your data in followin format 
+
+```bash
+/mscoco
+├── test
+│   ├── HR
+│   └── LR
+└── train
+    ├── HR
+    └── LR
+```
+
+
+
 - Training
 
     ```shell

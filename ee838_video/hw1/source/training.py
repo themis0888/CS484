@@ -2,7 +2,7 @@
 CUDA_VISIBLE_DEVICES=1 python -i training.py \
 --data_path=/home/siit/navi/data/input_data/mscoco/ \
 --im_size=64 --batch_size=16 --ratio=2 \
---mode=testing --checkpoint_path=./06checkpoints \
+--mode=training --checkpoint_path=./06checkpoints \
 
 """
 import tensorflow as tf
@@ -21,7 +21,7 @@ parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest=
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
 parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
-parser.add_argument('--batch_size', type=int, dest='batch_size', default=8)
+parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
 parser.add_argument('--save_freq', type=int, dest='save_freq', default=1000)
