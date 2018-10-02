@@ -46,7 +46,7 @@ if os.path.exists(config.save_path):
 # search_similar_image: str, list of str, dict of ndarray, int -> str
 # img address, list of img adress, features, int -> img address
 # Find the top k images with biggest similarity
-def search_similar_image(query, data_list, features, top_k = 4):
+def search_similar_image(query, data_list, features, top_k = 3):
     
     query_point = features[query]
     min_dist = [np.inf for i in range(top_k+1)]
@@ -74,21 +74,31 @@ def test():
 		for dp, dn, filenames in os.walk(config.data_path) 
 		for f in filenames if 'query' in dp]
 
-
+    query_filenames = [f for dp, dn, filenames in os.walk(config.data_path) 
+		for f in filenames if 'query' in dp]
 
     data_list = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path) 
-		for f in filenames if ('test' in dp) and f not in query_list]
+		for f in filenames if ('test' in dp) and f not in query_filenames]
 
+    """
     sample_input = '/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'
     skio.imsave('sample.png', skio.imread('/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'))
     top_k_list = search_similar_image(sample_input, data_list, feature_dict)
+    """
 
     counter = 1
-    for img in top_k_list:
+    num_correct = 0
+    for query in query_list:
+        top_k_list = search_similar_image(query, data_list, feature_dict)
         counter += 1
-        skio.imsave('top_{}.png'.format(counter), skio.imread(img))
+        for entry in top_k_list:
+            if int(os.path.basename(query)[6:-4]) // 4 == int(os.path.basename(entry)[6:-4]) // 4:
+                num_correct += 1
+    print('Accuracy: {}'.format(num_correct/3/counter))
 
+
+test()
 
 list_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path) 
