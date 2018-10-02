@@ -18,14 +18,14 @@ import numpy as np
 import scipy
 import tensorflow as tf
 import tensorflow.contrib.slim.nets as nets
-data_loader = __import__('001_data_loader')
 import scipy.io as sio
 import skimage.io as skio
 
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/danbooru2017/256px/')
+parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/ukbench_small/')
+parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/ukbench_small/')
 parser.add_argument('--save_path', type=str, dest='save_path', default='./output')
 parser.add_argument('--input_list', type=str, dest='input_list', default='path_label_list.txt')
 parser.add_argument('--model_path', type=str, dest='model_path', default='/home/siit/navi/data/models/')
@@ -40,100 +40,58 @@ parser.add_argument('--val_display', type=int, dest='val_display', default=1000)
 parser.add_argument('--val_iter', type=int, dest='val_iter', default=100)
 config, unparsed = parser.parse_known_args() 
 
-
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
-sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
-
 if os.path.exists(config.save_path):
 	os.makedirs(config.save_path)
 
-def search(query_list, data_list, top_k = 4):
+# search_similar_image: str, list of str, dict of ndarray, int -> str
+# img address, list of img adress, features, int -> img address
+# Find the top k images with biggest similarity
+def search_similar_image(query, data_list, features, top_k = 4):
     
+    query_point = features[query]
+    min_dist = [np.inf for i in range(top_k+1)]
+    min_data = [None for i in range(top_k+1)]       
+        
+    for data in data_list:
+        data_point = features[data]
+        dist_q_d = np.mean(np.abs(query_point - data_point))
+        for k in reversed(range(top_k)):
+            if dist_q_d < min_dist[k]:
+                min_dist[k+1] = min_dist[k]
+                min_dist[k] = dist_q_d
+                min_data[k+1] = min_data[k]
+                min_data[k] = data
+            else: 
+                break
+
+    return min_data[:-1]
+
+def test():
+
+    feature_dict = np.load(os.path.join(config.meta_path, 'vgg_19_feature_prediction.npy')).item()
+    
+    query_list = [os.path.join(dp, f)
+		for dp, dn, filenames in os.walk(config.data_path) 
+		for f in filenames if 'query' in dp]
 
 
-	
-""" TRAINING """
-im_size = [224, 224, 3]
-x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])
-y_ = tf.placeholder(tf.float32, shape=[None, config.n_classes])
-keep_prob = tf.placeholder(tf.float32)
 
-print("\nLoding the model")
+    data_list = [os.path.join(dp, f)
+		for dp, dn, filenames in os.walk(config.data_path) 
+		for f in filenames if ('test' in dp) and f not in query_list]
 
-"""
-Main Network
-"""
+    sample_input = '/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'
+    skio.imsave('sample.png', skio.imread('/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'))
+    top_k_list = search_similar_image(sample_input, data_list, feature_dict)
 
-slim = tf.contrib.slim
-vgg = nets.vgg
-res = nets.resnet_v1
-inc = nets.inception
+    counter = 1
+    for img in top_k_list:
+        counter += 1
+        skio.imsave('top_{}.png'.format(counter), skio.imread(img))
 
-if config.model_name == 'vgg_19':
-
-	with slim.arg_scope(vgg.vgg_arg_scope()):
-		logits, endpoints = vgg.vgg_19(x, num_classes=config.n_classes, is_training=False)
-		feat_layer = endpoints['vgg_19/fc7']
-	all_vars = tf.all_variables()
-	var_to_restore = [v for v in all_vars if not v.name.startswith('vgg_19/fc8')]
-
-
-elif config.model_name == 'resnet_v1_50':
-	res = nets.resnet_v1
-	with slim.arg_scope(res.resnet_arg_scope()):
-		logits, endpoints = res.resnet_v1_50(x, num_classes=config.n_classes, is_training=False)
-		feat_layer = endpoints['resnet_v1_50/block4/unit_3/bottleneck_v1']
-	all_vars = tf.all_variables()
-	var_to_restore = [v for v in all_vars] # if not v.name.startswith('predictions')]
-
-
-elif config.model_name == 'inception_v3':
-	with slim.arg_scope(inc.inception_v3_arg_scope()):
-		logits, endpoints = inc.inception_v3(x, num_classes=config.n_classes, is_training=False)
-		feat_layer = endpoints['PreLogits']
-	#all_vars = tf.all_variables()
-	#var_to_restore = [v for v in all_vars] 
-
-model = config.model_path + config.model_name + '.ckpt'
-
-tf.train.start_queue_runners(sess=sess)
-saver = tf.train.Saver(var_to_restore)
-saver.restore(sess, model)
-
-print("\nStart Extracting features")
 
 list_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path) 
 		for f in filenames]
 
-num_file = len(list_files)
-# num_file : int 
-# count the number of input image files
 
-"""
-example) queue_data('/home/siit/navi/data/sample/meta/path_label_list.txt', 
-50, 1, 'val',multi_label=False)
-"""
-
-feat = []
-feat_dict = {}
-for i in range(num_file):
-	batch_x = data_loader.queue_data_dict([list_files[i]], im_size)
-	batch_y = np.zeros([1,50])
-	feature = sess.run(feat_layer, feed_dict={x: batch_x, y_: batch_y, keep_prob:1.0})
-	feat.append(feature[0][0][0])
-	feat_dict[list_files[i]] = feature[0][0][0]
-
-	if i%1000 == 0:
-		print("{0:5f} % done".format(100*i/num_file))
-
-
-save_path = config.save_path
-if not os.path.exists(save_path):
-	os.mkdir(save_path)
-
-np.save(os.path.join(save_path, 
-	config.model_name + '_feature_prediction.npy'), feat_dict)
-
-
-print('Feature extraction completed')
