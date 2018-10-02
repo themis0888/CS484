@@ -1,8 +1,8 @@
 """
-CUDA_VISIBLE_DEVICES=3 CUDA_CACHE_PATH="/gpu_cache/" \
-python feature_extractor.py \
---data_path=/shared/data/sample/ \
---list_path=/shared/data/sample/meta/ \
+CUDA_VISIBLE_DEVICES=0 \
+python -i 211_VGG_feature_extractor.py \
+--data_path=/home/siit/navi/data/input_data/ukbench_small/ \
+--save_path=/home/siit/navi/data/meta_data/ukbench_small/ \
 --model_name=vgg_19
 
 
@@ -18,21 +18,20 @@ import numpy as np
 import scipy
 import tensorflow as tf
 import tensorflow.contrib.slim.nets as nets
-import data_loader
+data_loader = __import__('001_data_loader')
 import scipy.io as sio
-from util import *
+import skimage.io as skio
 
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, dest='data_path', default='/shared/data/danbooru2017/256px/')
-parser.add_argument('--data_name', type=str, dest='data_name', default='danbooru')
-parser.add_argument('--save_path', type=str, dest='save_path', default='/shared/data/meta/danbooru2017/256px/')
+parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/danbooru2017/256px/')
+parser.add_argument('--save_path', type=str, dest='save_path', default='./output')
 parser.add_argument('--input_list', type=str, dest='input_list', default='path_label_list.txt')
-parser.add_argument('--model_path', type=str, dest='model_path', default='/shared/data/models/')
+parser.add_argument('--model_path', type=str, dest='model_path', default='/home/siit/navi/data/models/')
 parser.add_argument('--model_name', type=str, dest='model_name', default='vgg_19')
 
-parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.96)
+parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.45)
 parser.add_argument('--n_classes', type=int, dest='n_classes', default=50)
 parser.add_argument('--max_iter', type=int, dest='max_iter', default=300000)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=1)
@@ -45,7 +44,12 @@ config, unparsed = parser.parse_known_args()
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
 sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 
+if os.path.exists(config.save_path):
+	os.makedirs(config.save_path)
+
+	
 """ TRAINING """
+im_size = [224, 224, 3]
 x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])
 y_ = tf.placeholder(tf.float32, shape=[None, config.n_classes])
 keep_prob = tf.placeholder(tf.float32)
@@ -94,36 +98,28 @@ saver.restore(sess, model)
 
 print("\nStart Extracting features")
 
-for itr in range(100):
-	print("\nFor the {0:03d}".format(itr))
-awa_train_path = config.data_path + 'meta/path_label_list{0:03d}.txt'.format(itr)
+list_files = [os.path.join(dp, f)
+		for dp, dn, filenames in os.walk(config.data_path) 
+		for f in filenames]
 
+num_file = len(list_files)
 # num_file : int 
 # count the number of input image files
-with open(awa_train_path) as f:
-    for num_file, l in enumerate(f):
-        pass
 
 """
 example) queue_data('/home/siit/navi/data/sample/meta/path_label_list.txt', 
 50, 1, 'val',multi_label=False)
 """
-trainX, trainY = data_loader.queue_data(
-		awa_train_path, config.n_classes, config.batch_size, 'val', multi_label=False)
 
 feat = []
-lab = []
-path_feat = {}
-for i in range(num_file+1):
-	batch_x, batch_y = sess.run([trainX, trainY])
-	_, idx = np.nonzero(batch_y)
-
+feat_dict = {}
+for i in range(num_file):
+	batch_x = data_loader.queue_data_dict([list_files[i]], im_size)
+	batch_y = np.zeros([1,50])
 	feature = sess.run(feat_layer, feed_dict={x: batch_x, y_: batch_y, keep_prob:1.0})
 	feat.append(feature[0][0][0])
+	feat_dict[list_files[i]] = feature[0][0][0]
 
-	lab.append(idx[0])
-	path_feat[]
-	
 	if i%1000 == 0:
 		print("{0:5f} % done".format(100*i/num_file))
 
@@ -132,7 +128,8 @@ save_path = config.save_path
 if not os.path.exists(save_path):
 	os.mkdir(save_path)
 
-sio.savemat(save_path + config.model_name + '_feature_prediction{0:03d}.mat'.format(itr), 
-	{'feature': feat, 'label': lab})
+np.save(os.path.join(save_path, 
+	config.model_name + '_feature_prediction.npy'), feat_dict)
 
-print('end')
+
+print('Feature extraction completed')
