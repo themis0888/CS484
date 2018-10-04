@@ -1,9 +1,9 @@
 """
 CUDA_VISIBLE_DEVICES=0 \
-python -i 211_VGG_feature_extractor.py \
+python -i feature_extractor.py \
 --data_path=/home/siit/navi/data/input_data/ukbench_small/ \
 --save_path=/home/siit/navi/data/meta_data/ukbench_small/ \
---model_name=vgg_19
+--model_name=vgg_16
 
 
 CUDA_VISIBLE_DEVICES=1 python feature_extractor.py \
@@ -18,10 +18,10 @@ import numpy as np
 import scipy
 import tensorflow as tf
 import tensorflow.contrib.slim.nets as nets
-data_loader = __import__('001_data_loader')
 import scipy.io as sio
 import skimage.io as skio
-
+import data_loader
+from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ckpt
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -32,7 +32,7 @@ parser.add_argument('--model_path', type=str, dest='model_path', default='/home/
 parser.add_argument('--model_name', type=str, dest='model_name', default='vgg_19')
 
 parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.45)
-parser.add_argument('--n_classes', type=int, dest='n_classes', default=50)
+parser.add_argument('--n_classes', type=int, dest='n_classes', default=1000)
 parser.add_argument('--max_iter', type=int, dest='max_iter', default=300000)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=1)
 parser.add_argument('--train_display', type=int, dest='train_display', default=200)
@@ -44,10 +44,10 @@ config, unparsed = parser.parse_known_args()
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
 sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 
-if os.path.exists(config.save_path):
+if not os.path.exists(config.save_path):
 	os.makedirs(config.save_path)
 
-	
+
 """ TRAINING """
 im_size = [224, 224, 3]
 x = tf.placeholder(tf.float32, shape=[None, 224, 224, 3])
@@ -73,14 +73,24 @@ if config.model_name == 'vgg_19':
 	all_vars = tf.all_variables()
 	var_to_restore = [v for v in all_vars if not v.name.startswith('vgg_19/fc8')]
 
+if config.model_name == 'vgg_16':
+
+	with slim.arg_scope(vgg.vgg_arg_scope()):
+		logits, endpoints = vgg.vgg_16(x, num_classes=config.n_classes, is_training=False)
+		feat_layer = endpoints['vgg_16/pool5']
+	all_vars = tf.all_variables()
+	var_to_restore = [v for v in all_vars if not v.name.startswith('vgg_16/fc8')]
+
 
 elif config.model_name == 'resnet_v1_50':
 	res = nets.resnet_v1
 	with slim.arg_scope(res.resnet_arg_scope()):
 		logits, endpoints = res.resnet_v1_50(x, num_classes=config.n_classes, is_training=False)
 		feat_layer = endpoints['resnet_v1_50/block4/unit_3/bottleneck_v1']
+		
 	all_vars = tf.all_variables()
-	var_to_restore = [v for v in all_vars] # if not v.name.startswith('predictions')]
+	var_to_restore = [v for v in all_vars if (not v.name.startswith('predictions') and 
+	not 'logit' in v.name.lower())]
 
 
 elif config.model_name == 'inception_v3':
@@ -115,7 +125,7 @@ feat = []
 feat_dict = {}
 for i in range(num_file):
 	batch_x = data_loader.queue_data_dict([list_files[i]], im_size)
-	batch_y = np.zeros([1,50])
+	batch_y = np.zeros([1, config.n_classes])
 	feature = sess.run(feat_layer, feed_dict={x: batch_x, y_: batch_y, keep_prob:1.0})
 	feat.append(feature[0][0][0])
 	feat_dict[list_files[i]] = feature[0][0][0]
@@ -129,7 +139,7 @@ if not os.path.exists(save_path):
 	os.mkdir(save_path)
 
 np.save(os.path.join(save_path, 
-	config.model_name + '_feature_prediction.npy'), feat_dict)
+	config.model_name + '_feature_pool5.npy'), feat_dict)
 
 
 print('Feature extraction completed')
