@@ -1,0 +1,221 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CS484 Written Question Template
+%
+% This is a LaTeX document. LaTeX is a markup language for producing 
+% documents. Your task is to fill out this document, then to compile 
+% it into a PDF document. 
+%
+% 
+% TO COMPILE:
+% > pdflatex thisfile.tex
+%
+% If you do not have LaTeX and need a LaTeX distribution:
+% - Personal laptops (all common OS): www.latex-project.org/get/
+% - We recommend miktex (https://miktex.org/) for latex engine,
+%   and TeXstudio(http://www.texstudio.org/) for latex editor.
+%   You should install both programs for editing latex.
+%   Or you can use Overleaf (https://www.overleaf.com/) which is 
+%   an online latex editor.
+%
+% If you need help with LaTeX, please come to office hours. 
+% Or, there is plenty of help online:
+% https://en.wikibooks.org/wiki/LaTeX
+%
+% Good luck!
+% Min and the CS484 staff
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks = true,
+            linkcolor = blue,
+            urlcolor  = blue]{hyperref}
+\usepackage[a4paper,margin=1.5in]{geometry}
+\usepackage{stackengine,graphicx}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\usepackage{microtype}
+\usepackage{times}
+
+% From https://ctan.org/pkg/matlab-prettifier
+\usepackage[numbered,framed]{matlab-prettifier}
+
+\frenchspacing
+\setlength{\parindent}{0cm} % Default is 15pt.
+\setlength{\parskip}{0.3cm plus1mm minus1mm}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Homework 1 Questions}
+\rhead{CS484}
+\rfoot{\thepage}
+
+\date{}
+
+\title{\vspace{-1cm}Homework 1 Questions}
+
+
+\begin{document}
+\maketitle
+\vspace{-2cm}
+\thispagestyle{fancy}
+
+\section*{Instructions}
+\begin{itemize}
+  \item Compile and read through the included MATLAB tutorial.
+  \item 2 questions.
+  \item Include code.
+  \item Feel free to include images or equations.
+  \item Please make this document anonymous.
+  \item \textbf{Please use only the space provided and keep the page breaks.} Please do not make new pages, nor remove pages. The document is a template to help grading.
+  \item If you really need extra space, please use new pages at the end of the document and refer us to it in your answers.
+\end{itemize}
+
+
+\section*{Submission}
+\begin{itemize}
+	\item Please zip your folder with \textbf{hw1\_student id\_name.zip} $($ex: hw1\_20181234\_Peter.zip$)$
+	\item Submit your homework to \href{http://klms.kaist.ac.kr/course/view.php?id=99418}{KLMS}.
+	\item An assignment after its original due date will be degraded from the marked credit per day: e.g., A will be downgraded to B for one-day delayed submission.
+\end{itemize}
+
+\pagebreak
+
+
+\section*{Questions}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please leave the pagebreak
+\paragraph{Q1:} We wish to set all pixels that have a brightness of 10 or less to 0, to remove sensor noise. However, our code is slow when run on a database with 1000 grayscale images.
+
+\emph{Image:} \href{grizzlypeakg.png}{grizzlypeakg.png}
+
+\begin{lstlisting}[style=Matlab-editor]
+A = imread('grizzlypeakg.png');
+[m1,n1] = size( A );
+for i=1:m1
+    for j=1:n1
+        if A(i,j) <= 10
+            A(i,j) = 0;
+        end
+    end
+end
+\end{lstlisting}
+
+\paragraph{Q1.1:} How could we speed it up?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A1.1:} Your answer here.
+
+
+\begin{lstlisting}[style=Matlab-editor]
+A = imread('grizzlypeakg.png');
+[m1,n1] = size( A );
+for k = 1:1000
+	B = A<=10;
+	A(B) = 0;
+end
+\end{lstlisting}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please leave the pagebreak
+\pagebreak
+\paragraph{Q1.2:} What factor speedup would we receive over 1000 images? Please measure it.
+
+Ignore file loading; assume all images are equal resolution; don't assume that the time taken for one image $\times1000$ will equal $1000$ image computations, as single short tasks on multitasking computers often take variable time.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A1.2:} Your answer here.
+
+The result change every time, so I conduct the same experiment for 3 times and claculate the average value of them. It took 19.603sec for provided code and 6.369sec for new method. It got 3.08 times faster. 
+The time for generating random image is excluded. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please leave the pagebreak
+\pagebreak
+\paragraph{Q1.3:} How might a speeded-up version change for color images? Please measure it.
+
+\emph{Image:} \href{grizzlypeak.jpg}{grizzlypeak.jpg}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A1.3:} Your answer here.
+I used 100 random noise and the time for generating random image is excluded. 
+It took 155.5590 sec for extended version of provided way.
+
+\begin{lstlisting}[style=Matlab-editor]
+for iter = 1:100
+	for i=1:l1
+		for j=1:m1
+			for k=n1
+				if A(i,j,k) <= 10
+					A(i,j,k) = 0;
+				end
+			end
+		end
+	end
+end
+\end{lstlisting}
+
+On the other hand, following method took 7.2290 sec.
+\begin{lstlisting}[style=Matlab-editor]
+for iter = 1:100
+	B = A<=10;
+	A(B) = 0;
+end
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please leave the pagebreak
+\pagebreak
+\paragraph{Q2:} We wish to reduce the brightness of an image but, when trying to visualize the result, all we sees is white with some weird ``corruption'' of color patches.
+
+\emph{Image:} \href{gigi.jpg}{gigi.jpg}
+
+\begin{lstlisting}[style=Matlab-editor]
+I = double( imread('gigi.jpg') );
+I = I - 20;
+imshow( I );
+\end{lstlisting}
+
+\paragraph{Q2.1:} What is incorrect with this approach? How can it be fixed while maintaining the same amount of brightness reduction?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A2.1:} Your answer here.
+
+First, imshow took the normalized value for the image data, so it need to use im2double. Which means that in order to handle the image with floating point, it requries normalization. Thus, you need to normalize the subtracting value when you decrease the brightness. 
+Following is the right version of code. 
+
+\begin{lstlisting}[style=Matlab-editor]
+I = im2double( imread('gigi.jpg') );
+I = I - 20/255;
+imshow( I );
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Please leave the pagebreak
+\pagebreak
+\paragraph{Q2.2:} Where did the original corruption come from? Which specific values in the original image did it represent?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{A2.2:} Your answer here.
+
+The imshow() function in Matlab convert the negative value to 0, and conver the value grater than 1 to 1. In other word, if the original (normalized) value of one cell was (2, 1.5, -1) in RGB format, imshow represent this cell as (1,1,0) which is bright yellow. 
+
+When I decrease the brightness by subtracting 20 from the I = double( imread('gigi.jpg')), there were 39282 element in I which has samller value than I. Every cell where contains smaller value than 1 represented in different color from white. Therefore, these cells are the corruption.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
