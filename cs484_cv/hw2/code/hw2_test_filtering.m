@@ -11,16 +11,20 @@ function proj1_test_filtering()
 
 %% Setup
 test_image = im2single(imread('../data/cat.bmp'));
-test_image = imresize(test_image, 0.7, 'bilinear'); %resizing to speed up testing
+test_image = imresize(test_image, 0.7, 'bilinear'); %resizing to speed up testing%
 figure(1)
 imshow(test_image)
 
 %% Identify filter
 %This filter should do nothing regardless of the padding method you use.
 identity_filter = [0 0 0; 0 1 0; 0 0 0];
-
+size(test_image);
 identity_image  = my_imfilter(test_image, identity_filter);
+sol_identity_image  = imfilter(test_image, identity_filter);
+size(identity_image);
 
+    
+    
 figure(2); imshow(identity_image);
 imwrite(identity_image, 'identity_image.jpg', 'quality', 95);
 
@@ -29,7 +33,7 @@ imwrite(identity_image, 'identity_image.jpg', 'quality', 95);
 blur_filter = [1 1 1; 1 1 1; 1 1 1];
 blur_filter = blur_filter / sum(sum(blur_filter)); %making the filter sum to 1
 
-blur_image = my_imfilter(test_image, blur_filter);
+blur_image = imfilter(test_image, blur_filter);
 
 figure(3); imshow(blur_image);
 imwrite(blur_image, 'blur_image.jpg', 'quality', 95);
