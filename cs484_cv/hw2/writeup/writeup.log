@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018/W32TeX) (preloaded format=xelatex 2018.9.28)  4 OCT 2018 22:01
+This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018/W32TeX) (preloaded format=xelatex 2018.9.28)  7 OCT 2018 23:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -389,8 +389,7 @@ Package: listings 2018/09/02 1.7 (Carsten Heinz)
 \jayDepth@mlpr=\skip61
 \sectionRuleOffset@mlpr=\skip62
 \toks@mlpr=\toks20
-)
-No file writeup.aux.
+) (./writeup.aux)
 \openout1 = `writeup.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 81.
@@ -413,7 +412,7 @@ LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 81.
 LaTeX Font Info:    ... okay on input line 81.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 81.
 LaTeX Font Info:    Try loading font information for TS1+cmr on input line 81.
-(c:/usr/texlive/2018/texmf-dist/tex/latex/base/ts1cmr.fd
+ (c:/usr/texlive/2018/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 81.
@@ -436,12 +435,10 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 81.
 LaTeX Info: Redefining \pageref on input line 81.
 LaTeX Info: Redefining \nameref on input line 81.
+ (./writeup.out) (./writeup.out)
 \@outlinefile=\write3
 \openout3 = `writeup.out'.
 
-
-
-Package hyperref Warning: Rerun to get /PageLabels entry.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -508,79 +505,31 @@ LaTeX Warning: No \author given.
 LaTeX Font Warning: Font shape `TU/ptm/bx/n' undefined
 (Font)              using `TU/ptm/m/n' instead on input line 86.
 
-
-LaTeX Warning: Reference `eq:one' on page 1 undefined on input line 98.
-
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 100.
-LaTeX Font Info:    Try loading font information for TU+pcr on input line 110.
-LaTeX Font Info:    No file TUpcr.fd. on input line 110.
-
-LaTeX Font Warning: Font shape `TU/pcr/m/n' undefined
-(Font)              using `TU/lmr/m/n' instead on input line 110.
-
-(c:/usr/texlive/2018/texmf-dist/tex/latex/microtype/mt-LatinModernRoman.cfg
-File: mt-LatinModernRoman.cfg 2013/03/13 v1.0 microtype config. file: Latin Modern Roman (RS)
-)
-Package microtype Info: Loading generic protrusion settings for font family
-(microtype)             `pcr' (encoding: TU).
-(microtype)             For optimal results, create family-specific settings.
-(microtype)             See the microtype manual for details.
- (c:/usr/texlive/2018/texmf-dist/tex/generic/oberdiek/se-ascii-print.def
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 102.
+(c:/usr/texlive/2018/texmf-dist/tex/generic/oberdiek/se-ascii-print.def
 File: se-ascii-print.def 2016/05/16 v1.11 stringenc: Printable ASCII characters
 ) [1
 
 ]
-
-LaTeX Warning: Reference `fig:result1' on page 2 undefined on input line 122.
-
-
-LaTeX Warning: Reference `fig:result1' on page 2 undefined on input line 123.
-
-File: placeholder.jpg Graphic file (type bmp)
-<placeholder.jpg>
-File: placeholder.jpg Graphic file (type bmp)
-<placeholder.jpg>
-
-LaTeX Font Warning: Font shape `TU/ptm/m/it' undefined
-(Font)              using `TU/ptm/m/n' instead on input line 130.
-
-
-LaTeX Warning: Reference `tab:table1' on page 2 undefined on input line 134.
-
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 150.
-[2]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 150.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 102.
  (./writeup.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 150.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 150.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 102.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 102.
+Package rerunfilecheck Info: File `writeup.out' has not changed.
+(rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E.
 
-
-Package rerunfilecheck Warning: File `writeup.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `writeup.out':
-(rerunfilecheck)             Before: 
-(rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 150.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 102.
  ) 
 Here is how much of TeX's memory you used:
- 13468 strings out of 492960
- 198521 string characters out of 6135243
- 339196 words of memory out of 5000000
- 17350 multiletter control sequences out of 15000+600000
- 7684 words of font info for 31 fonts, out of 8000000 for 9000
+ 13271 strings out of 492960
+ 193672 string characters out of 6135243
+ 317740 words of memory out of 5000000
+ 17168 multiletter control sequences out of 15000+600000
+ 6768 words of font info for 28 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 34i,11n,56p,1037b,1184s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 32i,11n,43p,1037b,346s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on writeup.pdf (2 pages).
+Output written on writeup.pdf (1 page).

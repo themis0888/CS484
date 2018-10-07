@@ -24,7 +24,7 @@ sol_identity_image  = imfilter(test_image, identity_filter);
 size(identity_image);
 
     
-    
+
 figure(2); imshow(identity_image);
 imwrite(identity_image, 'identity_image.jpg', 'quality', 95);
 
@@ -81,3 +81,7 @@ high_pass_image = test_image - blur_image; %simply subtract the low frequency co
 
 figure(7); imshow(high_pass_image + 0.5);
 imwrite(high_pass_image + 0.5, 'high_pass_image.jpg', 'quality', 95);
+disp('1')
+disp(size(test_image))
+disp(size(identity_image))
+disp(size(large_blur_image))

@@ -28,6 +28,7 @@ if mod(filter_size(1),2) == 1
     ft_size = fix(size(filter)/2);
     im_size = size(image);
     B = zeros([ft_size(1)*2 + im_size(1) ft_size(2)*2 + im_size(2) 3]);
+    
     for k = 1:3
         for i = 1:im_size(1)
             for j = 1:im_size(2) 
