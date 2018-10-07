@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018/W32TeX) (preloaded format=xelatex 2018.9.28)  4 OCT 2018 22:00
+This is XeTeX, Version 3.14159265-2.6-0.99999 (TeX Live 2018/W32TeX) (preloaded format=xelatex 2018.9.28)  7 OCT 2018 23:20
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -489,24 +489,299 @@ LaTeX Warning: No \author given.
 LaTeX Font Warning: Font shape `TU/ptm/bx/n' undefined
 (Font)              using `TU/ptm/m/n' instead on input line 85.
 
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.95> on input line 104.
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:105: Missing $ inserted.
+<inserted text> 
+                $
+l.105 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:105: Display math should end with $$.
+<to be read again> 
+                   \par 
+l.105 
+      
+The `$' that I just saw supposedly matches a previous `$$'.
+So I shall assume that you typed `$$' both times.
+
+
+LaTeX Font Warning: Font shape `TU/ptm/m/it' undefined
+(Font)              using `TU/ptm/m/n' instead on input line 108.
+
 (c:/usr/texlive/2018/texmf-dist/tex/generic/oberdiek/se-ascii-print.def
 File: se-ascii-print.def 2016/05/16 v1.11 stringenc: Printable ASCII characters
 ) [1
 
-]
+] [2]
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing { inserted.
+<to be read again> 
+                   }
+l.151 ^^I^^I\frac{1}_
+                     {9} & \frac{1}_{9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
 
-LaTeX Font Warning: Font shape `TU/ptm/m/it' undefined
-(Font)              using `TU/ptm/m/n' instead on input line 110.
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing } inserted.
+<inserted text> 
+                }
+l.151 ^^I^^I\frac{1}_{9} &
+                           \frac{1}_{9} & \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
 
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 110.
-[2] [3]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 153.
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing { inserted.
+<to be read again> 
+                   }
+l.151 ^^I^^I\frac{1}_{9} & \frac{1}_
+                                    {9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing } inserted.
+<inserted text> 
+                }
+l.151 ^^I^^I\frac{1}_{9} & \frac{1}_{9} &
+                                          \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing { inserted.
+<to be read again> 
+                   }
+l.151 ...^I\frac{1}_{9} & \frac{1}_{9} & \frac{1}_
+                                                  {9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:151: Missing } inserted.
+<inserted text> 
+                }
+l.151 ...c{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+                                                  
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing { inserted.
+<to be read again> 
+                   }
+l.152 ^^I^^I\frac{1}_
+                     {9} & \frac{1}_{9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing } inserted.
+<inserted text> 
+                }
+l.152 ^^I^^I\frac{1}_{9} &
+                           \frac{1}_{9} & \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing { inserted.
+<to be read again> 
+                   }
+l.152 ^^I^^I\frac{1}_{9} & \frac{1}_
+                                    {9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing } inserted.
+<inserted text> 
+                }
+l.152 ^^I^^I\frac{1}_{9} & \frac{1}_{9} &
+                                          \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing { inserted.
+<to be read again> 
+                   }
+l.152 ...^I\frac{1}_{9} & \frac{1}_{9} & \frac{1}_
+                                                  {9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:152: Missing } inserted.
+<inserted text> 
+                }
+l.152 ...c{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+                                                  
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing { inserted.
+<to be read again> 
+                   }
+l.153 ^^I^^I\frac{1}_
+                     {9} & \frac{1}_{9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing } inserted.
+<inserted text> 
+                }
+l.153 ^^I^^I\frac{1}_{9} &
+                           \frac{1}_{9} & \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing { inserted.
+<to be read again> 
+                   }
+l.153 ^^I^^I\frac{1}_{9} & \frac{1}_
+                                    {9} & \frac{1}_{9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing } inserted.
+<inserted text> 
+                }
+l.153 ^^I^^I\frac{1}_{9} & \frac{1}_{9} &
+                                          \frac{1}_{9} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing { inserted.
+<to be read again> 
+                   }
+l.153 ...^I\frac{1}_{9} & \frac{1}_{9} & \frac{1}_
+                                                  {9} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:153: Missing } inserted.
+<inserted text> 
+                }
+l.153 ...c{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+                                                  
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:156: Missing { inserted.
+<to be read again> 
+                   }
+l.156 ^^I^^I0 & -\frac{1}_
+                          {2} & 0 \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:156: Missing } inserted.
+<inserted text> 
+                }
+l.156 ^^I^^I0 & -\frac{1}_{2} &
+                                0 \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:157: Missing { inserted.
+<to be read again> 
+                   }
+l.157 ^^I^^I-\frac{1}_
+                      {2} & 2 & -\frac{1}_{2} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:157: Missing } inserted.
+<inserted text> 
+                }
+l.157 ^^I^^I-\frac{1}_{2} &
+                            2 & -\frac{1}_{2} \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:157: Missing { inserted.
+<to be read again> 
+                   }
+l.157 ^^I^^I-\frac{1}_{2} & 2 & -\frac{1}_
+                                          {2} \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:157: Missing } inserted.
+<inserted text> 
+                }
+l.157 ^^I^^I-\frac{1}_{2} & 2 & -\frac{1}_{2} \\
+                                                
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:158: Missing { inserted.
+<to be read again> 
+                   }
+l.158 ^^I^^I0 & -\frac{1}_
+                          {2} & 0 \\
+A left brace was mandatory here, so I've put one in.
+You might want to delete and/or insert some corrections
+so that I will find a matching right brace soon.
+(If you're confused by all this, try typing `I}' now.)
+
+c:/Users/navi/Dropbox/cswork/18Fall/cs484_cv/hw2/questions/2018_Fall_Homework2_Questions.tex:158: Missing } inserted.
+<inserted text> 
+                }
+l.158 ^^I^^I0 & -\frac{1}_{2} &
+                                0 \\
+I've put in what seems to be necessary to fix
+the current column of the current alignment.
+Try to go on, since this might almost work.
+
+File: ../lpimage.jpg Graphic file (type bmp)
+<../lpimage.jpg>
+File: ../hpimage.jpg Graphic file (type bmp)
+<../hpimage.jpg>
+[3]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 215.
  [4]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 153.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 215.
  (./2018_Fall_Homework2_Questions.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 153.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 153.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 215.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 215.
 
 
 Package rerunfilecheck Warning: File `2018_Fall_Homework2_Questions.out' has changed.
@@ -519,15 +794,18 @@ Package rerunfilecheck Info: Checksums for `2018_Fall_Homework2_Questions.out':
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 153.
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 215.
  ) 
 Here is how much of TeX's memory you used:
- 13221 strings out of 492960
- 193242 string characters out of 6135243
- 316937 words of memory out of 5000000
- 17128 multiletter control sequences out of 15000+600000
+ 13235 strings out of 492960
+ 193430 string characters out of 6135243
+ 318937 words of memory out of 5000000
+ 17137 multiletter control sequences out of 15000+600000
  7684 words of font info for 31 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 32i,11n,43p,1061b,347s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 32i,11n,43p,1061b,345s stack positions out of 5000i,500n,10000p,200000b,80000s
 
 Output written on 2018_Fall_Homework2_Questions.pdf (4 pages).

@@ -23,29 +23,33 @@ function output = my_imfilter(image, filter)
 %%%%%%%%%%%%%%%%
 % Your code here
 %%%%%%%%%%%%%%%%
-
-ft_size = fix(size(filter)/2);
-im_size = size(image);
-B = zeros([ft_size(1)*2 + im_size(1) ft_size(2)*2 + im_size(2) 3]);
-for k = 1:3
-    for i = 1:im_size(1)
-        for j = 1:im_size(2) 
-            B(i+ft_size(1), j+ft_size(2), k) = image(i,j,k);        
+filter_size = size(filter);
+if mod(filter_size(1),2) == 1
+    ft_size = fix(size(filter)/2);
+    im_size = size(image);
+    B = zeros([ft_size(1)*2 + im_size(1) ft_size(2)*2 + im_size(2) 3]);
+    for k = 1:3
+        for i = 1:im_size(1)
+            for j = 1:im_size(2) 
+                B(i+ft_size(1), j+ft_size(2), k) = image(i,j,k);        
+            end
         end
     end
-end
 
-C = zeros(im_size);
-disp(size(image));
-disp(size(B));
-disp(size(C));
-filter_f = flipud(fliplr(filter));
-for k = 1:3
-    for i = 1:im_size(1)
-        for j = 1:im_size(2) 
-            C(i,j,k) = sum(sum(B(i:i+2*ft_size(1):i,j:j+2*ft_size(2),k).*filter_f));
+    C = zeros(im_size);
+    disp(size(image));
+    disp(size(B));
+    disp(size(C));
+    filter_f = flipud(fliplr(filter));
+    for k = 1:3
+        for i = 1:im_size(1)
+            for j = 1:im_size(2) 
+                C(i,j,k) = sum(sum(B(i:i+2*ft_size(1):i,j:j+2*ft_size(2),k).*filter_f));
+            end
         end
     end
-end
 
-output = C;
+    output = C;
+else
+    output = 'Error, put odd size filter';
+end

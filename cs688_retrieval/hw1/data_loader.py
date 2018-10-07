@@ -14,7 +14,7 @@ VGG_MEAN = [103.939, 116.779, 123.68]
 # /shared/data/mnist_png/train/0/1.png
 
 # fine_list: str, list, bool, bool -> list of str
-# Find the file list recursively 
+# Find the file list recursively
 def file_list(path, extensions, sort=True, path_label = False):
 	if path_label == True:
 		result = [(os.path.join(dp, f) + ' % ' + os.path.join(dp, f).split('/')[-2])

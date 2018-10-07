@@ -97,8 +97,15 @@ urlcolor  = blue]{hyperref}
 	\paragraph{Q1:} Explicitly describe image convolution: the input, the transformation, and the output. Why is it useful for computer vision?
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	\paragraph{A1:} Your answer here.
+	\paragraph{A1:} 
+	When you have the image matrix I[width,height] and filter f[width,height],
+	the convolution matrix h is following 
 	
+	\[h[m,n] = \sum_{k,l}^{} f[k,l] I[m-k,n-l]]
+
+	\emph{We can get the response by going through the filter over the image. 
+	For example, we can extract the horizontal edge of the image by 
+	calcualting the convolution of the image and [1 0 1] filter.}
 	
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,7 +117,18 @@ urlcolor  = blue]{hyperref}
 	\emph{Please use \href{https://www.mathworks.com/help/images/ref/imfilter.html}{$imfilter$} to experiment! Look at the `options' parameter in MATLAB Help to learn how to switch the underlying operation from correlation to convolution.}
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	\paragraph{A2:} Your answer here.
+	\paragraph{A2:} 
+
+	\emph{Correlation shows the similarity of two data. Therefore, we can 
+	calculate the similarity of two images by calculating the correlation of them after
+	normalize. (Cosign similarity is one of the method) When you use this on two same image, 
+	the normalized correlation value is maximized when two images are exactly overlapped.}
+
+	\emph{On the other hand, convolution is the multicative response when the data 
+	go through the signal. For example, when the image go through the low pass filter, 
+	the high frequency component dissapear.}
+
+
 	
 	
 	
@@ -122,9 +140,35 @@ urlcolor  = blue]{hyperref}
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	\paragraph{A3:} Your answer here.
+	\emph{In case of the low pass filter, it has a tendency to average the wide area. Thus, 
+	the image which is passed the low pass filter is robust on the pixel level difference and gets 
+	smoother. On the other hand, in case of the high pass filter, it detect the stiff cliff of 
+	the pixel value. Therefore, it has a large value when some pixel's value drastically changed 
+	compare to the neighbor pixel. Following is the example of the LPF and HPF.}
+	\[
+		LPF =
+	   \left[ {\begin{array}{ccc}
+		\frac{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+		\frac{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+		\frac{1}_{9} & \frac{1}_{9} & \frac{1}_{9} \\
+	   \end{array} } \right]      HPF = 
+	   \left[ {\begin{array}{ccc}
+		0 & -\frac{1}_{2} & 0 \\
+		-\frac{1}_{2} & 2 & -\frac{1}_{2} \\
+		0 & -\frac{1}_{2} & 0 \\
+	   \end{array} } \right]
+	 \]
 	
+	\emph{Following is the example of the iamges which passed the low pass filter and high pass filter.}
 	
-	
+	\begin{figure}[h]
+		\includegraphics[width=6cm]{../lpimage.jpg}
+		\includegraphics[width=6cm]{../hpimage.jpg}
+		\caption{Left is LPF image and right one passed HPF }
+		\label{fig:HPF}
+	 \end{figure}
+
+	\emph{LPF image got blurred and HPF image shows the edges}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	% Please leave the pagebreak
@@ -136,9 +180,27 @@ urlcolor  = blue]{hyperref}
 	See RISDance.jpg in the attached file.
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	\paragraph{A4:} Your answer here.
+	\paragraph{A4:} 
+	\emph{Let's assume that there is a special operation for the matirx multiplication so the 
+	computation time does not follow the linear proportion of the number of 
+	element of thematrix. If the assumtion is true, then the computation time for
+	8x8 filter and 15x15 filter will have linear or constant difference.
+	However, as far as it requires same number of computation with the image size, (or larger matrix)
+	the time for computation with 8Mpixel image will take almost 32times of 0.25Mpixel image's one.}
 	
-	
+	\emph{Following is the experiment result. 1000times repeated and calcultated the average of the time.}
+	 
+	\emph{0.25M pixcel, 8x8 filter, 0.004084sec/img}
+	 
+	\emph{0.25M pixcel, 15x15 filter, 0.006916sec/img}
+	 
+	\emph{8M pixcel, 8x8 filter, 0.107183sec/img}
+	 
+	\emph{8M pixcel, 15x15 filter, 0.112047sec/img}
+
+	\emph{16M pixcel, 15x15 filter, 0.232047sec/img}
+
+	\emph{the time difference between 8x8 filter and 15x15 filter does not follow the linear proportion, and the difference between 0.25M image and 8M image 16M image roughly follow the linear proportion. }
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
