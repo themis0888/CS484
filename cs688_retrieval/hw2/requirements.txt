@@ -1,0 +1,11 @@
+tensorflow-gpu==1.4
+matplotlib
+tqdm
+pillow
+scipy
+numpy
+nanopq
+imageio
+animeface
+pillow
+scikit-image
