@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import skimage.io as skio
+import module as layer
 import pdb
 
 
@@ -51,26 +52,33 @@ class SISR:
 		self.X = tf.placeholder(tf.float32, [None, None, None, self.channels])
 		self.Y = tf.placeholder(tf.float32, 
 			[None, None, None, self.channels])
-			
-		# 1st convolutional layer
-		input_data = self.X
-		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
-					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
-		
+
+		stg = []	
+		# Stage 1
+		input_tensor = self.X
+		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=64,
+					kernel_size = [3,3], padding="same", activation=tf.nn.relu)
+		stg.append(input_tensor)
+		input_tensor = tf.nn.max_pool(input_tensor, ksize=[1, 2, 2, 1], 
+					strides=[1, 2, 2, 1], padding='VALID', name=name)
+
+
+
+
 		# 4 residual block (the block structure defined below)
 		for i in range(4):
-			input_data = self.residual_block(input_data, 64, 3)
+			input_tensor = self.residual_block(input_tensor, 64, 3)
 		
-		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
+		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=64,
 					kernel_size = [3,3], padding="same")
 
-		input_data = tf.layers.conv2d(inputs=input_data, filters=256,
+		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=256,
 					kernel_size = [3,3], padding="same")
 		
 		# shuffling layer 
-		input_data = tf.nn.relu(tf.depth_to_space(input_data, 2, 'NHWC'))
+		input_tensor = tf.nn.relu(tf.depth_to_space(input_tensor, 2, 'NHWC'))
 
-		self.output_data = tf.layers.conv2d(inputs=input_data, filters=3,
+		self.output_data = tf.layers.conv2d(inputs=input_tensor, filters=3,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
 
 		# -------------------- Objective -------------------- #
