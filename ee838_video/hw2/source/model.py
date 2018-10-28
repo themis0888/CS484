@@ -6,6 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import skimage.io as skio
 import module as layer
+import module as L
 import pdb
 
 
@@ -55,40 +56,80 @@ class SISR:
 
 		stg = []	
 		# Stage 1
-		input_tensor = self.X
-		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=64,
-					kernel_size = [3,3], padding="same", activation=tf.nn.relu)
-		stg.append(input_tensor)
-		input_tensor = tf.nn.max_pool(input_tensor, ksize=[1, 2, 2, 1], 
-					strides=[1, 2, 2, 1], padding='VALID', name=name)
+		net = self.X
 
 
+		stg = []	
+		X = tf.placeholder(tf.float32, [None, None, None, 3])
+		net = X
+		net = L.conv(net, name="conv1_1", kh=3, kw=3, n_out=64)
+		net = L.conv(net, name="conv1_2", kh=3, kw=3, n_out=64)
+		stg.append(net)
+		net = L.pool(net, 'pool_1', 2, 2, 2, 2)
 
+		net = L.conv(net, name="conv2_1", kh=3, kw=3, n_out=128)
+		net = L.conv(net, name="conv2_2", kh=3, kw=3, n_out=128)
+		stg.append(net)
+		net = L.pool(net, 'pool_2', 2, 2, 2, 2)
 
-		# 4 residual block (the block structure defined below)
-		for i in range(4):
-			input_tensor = self.residual_block(input_tensor, 64, 3)
-		
-		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=64,
-					kernel_size = [3,3], padding="same")
+		net = L.conv(net, name="conv3_1", kh=3, kw=3, n_out=256)
+		net = L.conv(net, name="conv3_2", kh=3, kw=3, n_out=256)
+		net = L.conv(net, name="conv3_3", kh=3, kw=3, n_out=256)
+		stg.append(net)
+		net = L.pool(net, 'pool_3', 2, 2, 2, 2)
 
-		input_tensor = tf.layers.conv2d(inputs=input_tensor, filters=256,
-					kernel_size = [3,3], padding="same")
-		
-		# shuffling layer 
-		input_tensor = tf.nn.relu(tf.depth_to_space(input_tensor, 2, 'NHWC'))
+		net = L.conv(net, name="conv4_1", kh=3, kw=3, n_out=512)
+		net = L.conv(net, name="conv4_2", kh=3, kw=3, n_out=512)
+		net = L.conv(net, name="conv4_3", kh=3, kw=3, n_out=512)
+		stg.append(net)
+		net = L.pool(net, 'pool_4', 2, 2, 2, 2)
 
-		self.output_data = tf.layers.conv2d(inputs=input_tensor, filters=3,
-					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
+		net = L.conv(net, name="conv5_1", kh=3, kw=3, n_out=512)
+		net = L.conv(net, name="conv5_2", kh=3, kw=3, n_out=512)
+		net = L.conv(net, name="conv5_3", kh=3, kw=3, n_out=512)
+		stg.append(net)
+		net = L.pool(net, 'pool_5', 2, 2, 2, 2)
+
+		net = L.conv(net, name="conv6_1", kh=3, kw=3, n_out=512)
+		net = L.conv(net, name="conv6_2", kh=3, kw=3, n_out=512)
+
+		net = L.deconv(net, name="deconv5_1", kh=3, kw=3, n_out=512)
+		net = tf.concat([net, stg[4]], axis=3)
+		net = L.conv(net, name="deconv5_2", kh=3, kw=3, n_out=512)
+
+		net = L.deconv(net, name="deconv4_1", kh=3, kw=3, n_out=512)
+		net = tf.concat([net, stg[3]], axis=3)
+		net = L.conv(net, name="deconv4_2", kh=3, kw=3, n_out=512)
+
+		net = L.deconv(net, name="deconv3_1", kh=3, kw=3, n_out=256)
+		net = tf.concat([net, stg[2]], axis=3)
+		net = L.conv(net, name="deconv3_2", kh=3, kw=3, n_out=256)
+
+		net = L.deconv(net, name="deconv2_1", kh=3, kw=3, n_out=128)
+		net = tf.concat([net, stg[1]], axis=3)
+		net = L.conv(net, name="deconv2_2", kh=3, kw=3, n_out=128)
+
+		net = L.deconv(net, name="deconv1_1", kh=3, kw=3, n_out=64)
+		net = tf.concat([net, stg[0]], axis=3)
+		net = L.conv(net, name="deconv1_2", kh=3, kw=3, n_out=64)
+
+		net = L.conv(net, name="deconv0_1", kh=3, kw=3, n_out=3)
+		net = tf.concat([net, X], axis=3)
+		net = L.conv(net, name="deconv0_2", kh=3, kw=3, n_out=3)
+
+		self.output_data = net
 
 		# -------------------- Objective -------------------- #
 
 		# L1 loss 
-		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
+		self.tau = 0.95
+		alpha = tf.maximum(self.X - tf.ones(self.X.shape)*self.tau, tf.zeros(self.X.shape))
+		self.inv = tf.pow(tf.divide(0.6*self.X, tf.maximum(1.6-self.X, 1e-10)), 1.0/0.9)
+		self.hdr_img = (1-alpha)*self.inv + alpha*self.exp(self.output_data)
+		self.cost = tf.losses.absolute_difference(self.Y, self.hdr_img)
 		self.var_to_restore = tf.global_variables()
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.0005).minimize(self.cost)
 		
-	
 		self.total_var = tf.global_variables() 
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
