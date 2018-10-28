@@ -10,7 +10,7 @@ import module as L
 import pdb
 
 
-class SISR:
+class HDR:
 	def __init__(self, sess, config, name):
 		self.sess = sess
 		self.name = name
@@ -57,76 +57,87 @@ class SISR:
 		stg = []	
 		# Stage 1
 		net = self.X
-
-
-		stg = []	
-		X = tf.placeholder(tf.float32, [None, None, None, 3])
-		net = X
+		# 320 * 320 
 		net = L.conv(net, name="conv1_1", kh=3, kw=3, n_out=64)
 		net = L.conv(net, name="conv1_2", kh=3, kw=3, n_out=64)
 		stg.append(net)
 		net = L.pool(net, 'pool_1', 2, 2, 2, 2)
 
+		# 160 
 		net = L.conv(net, name="conv2_1", kh=3, kw=3, n_out=128)
 		net = L.conv(net, name="conv2_2", kh=3, kw=3, n_out=128)
 		stg.append(net)
 		net = L.pool(net, 'pool_2', 2, 2, 2, 2)
 
+		# 80
 		net = L.conv(net, name="conv3_1", kh=3, kw=3, n_out=256)
 		net = L.conv(net, name="conv3_2", kh=3, kw=3, n_out=256)
 		net = L.conv(net, name="conv3_3", kh=3, kw=3, n_out=256)
 		stg.append(net)
 		net = L.pool(net, 'pool_3', 2, 2, 2, 2)
 
+		# 40
 		net = L.conv(net, name="conv4_1", kh=3, kw=3, n_out=512)
 		net = L.conv(net, name="conv4_2", kh=3, kw=3, n_out=512)
 		net = L.conv(net, name="conv4_3", kh=3, kw=3, n_out=512)
 		stg.append(net)
 		net = L.pool(net, 'pool_4', 2, 2, 2, 2)
 
+		# 20
 		net = L.conv(net, name="conv5_1", kh=3, kw=3, n_out=512)
 		net = L.conv(net, name="conv5_2", kh=3, kw=3, n_out=512)
 		net = L.conv(net, name="conv5_3", kh=3, kw=3, n_out=512)
 		stg.append(net)
 		net = L.pool(net, 'pool_5', 2, 2, 2, 2)
 
+		# 10
 		net = L.conv(net, name="conv6_1", kh=3, kw=3, n_out=512)
 		net = L.conv(net, name="conv6_2", kh=3, kw=3, n_out=512)
 
+		# 20
 		net = L.deconv(net, name="deconv5_1", kh=3, kw=3, n_out=512)
 		net = tf.concat([net, stg[4]], axis=3)
 		net = L.conv(net, name="deconv5_2", kh=3, kw=3, n_out=512)
 
+		# 40
 		net = L.deconv(net, name="deconv4_1", kh=3, kw=3, n_out=512)
 		net = tf.concat([net, stg[3]], axis=3)
 		net = L.conv(net, name="deconv4_2", kh=3, kw=3, n_out=512)
 
+		# 80
 		net = L.deconv(net, name="deconv3_1", kh=3, kw=3, n_out=256)
 		net = tf.concat([net, stg[2]], axis=3)
 		net = L.conv(net, name="deconv3_2", kh=3, kw=3, n_out=256)
 
+		# 160
 		net = L.deconv(net, name="deconv2_1", kh=3, kw=3, n_out=128)
 		net = tf.concat([net, stg[1]], axis=3)
 		net = L.conv(net, name="deconv2_2", kh=3, kw=3, n_out=128)
 
+		# 320
 		net = L.deconv(net, name="deconv1_1", kh=3, kw=3, n_out=64)
 		net = tf.concat([net, stg[0]], axis=3)
 		net = L.conv(net, name="deconv1_2", kh=3, kw=3, n_out=64)
 
+		# 320
 		net = L.conv(net, name="deconv0_1", kh=3, kw=3, n_out=3)
-		net = tf.concat([net, X], axis=3)
+		net = tf.concat([net, self.X], axis=3)
 		net = L.conv(net, name="deconv0_2", kh=3, kw=3, n_out=3)
 
-		self.output_data = net
+		self.hdr_log = net
 
 		# -------------------- Objective -------------------- #
 
 		# L1 loss 
 		self.tau = 0.95
-		alpha = tf.maximum(self.X - tf.ones(self.X.shape)*self.tau, tf.zeros(self.X.shape))
+		size = tf.stack([tf.shape(self.X)[0], 
+							tf.shape(self.X)[1], 
+							tf.shape(self.X)[2], 
+							3])
+		alpha = tf.maximum(self.X - tf.ones(size)*self.tau, tf.zeros(size))
 		self.inv = tf.pow(tf.divide(0.6*self.X, tf.maximum(1.6-self.X, 1e-10)), 1.0/0.9)
-		self.hdr_img = (1-alpha)*self.inv + alpha*self.exp(self.output_data)
-		self.cost = tf.losses.absolute_difference(self.Y, self.hdr_img)
+		self.output_data = (1-alpha)*self.inv + alpha*tf.exp(self.hdr_log)
+		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
 		self.var_to_restore = tf.global_variables()
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.0005).minimize(self.cost)
 		

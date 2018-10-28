@@ -1,8 +1,8 @@
 """
 CUDA_VISIBLE_DEVICES=1 python -i training.py \
---data_path=/home/siit/navi/data/input_data/mscoco/ \
---im_size=64 --batch_size=16 --ratio=2 \
---mode=training --checkpoint_path=./06checkpoints \
+--data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
+--im_size=320 --batch_size=16 --ratio=1 \
+--mode=training --checkpoint_path=./01checkpoints \
 
 """
 import tensorflow as tf
@@ -26,7 +26,7 @@ parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
 parser.add_argument('--save_freq', type=int, dest='save_freq', default=1000)
 parser.add_argument('--print_freq', type=int, dest='print_freq', default=50)
-parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.45)
+parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.95)
 
 parser.add_argument('--re_train', type=lambda x: x.lower() in ('true', '1'), dest='re_train', default=False)
 parser.add_argument('--mode', type=str, dest='mode', default='training')
@@ -63,11 +63,11 @@ if not os.path.exists(config.log_path):
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'train/LR' in dp]
+		for f in filenames if 'train/LDR' in dp]
 
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'test/LR' in dp]
+		for f in filenames if 'test/LDR' in dp]
 test_LR_files.sort()
 
 batch_size = config.batch_size
@@ -77,7 +77,7 @@ batch_size = config.batch_size
 
 if config.mode == 'training':
 	# -------------------- Training -------------------- #
-	model = SISR(sess, config, 'SISR')
+	model = HDR(sess, config, 'HDR')
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
 	for epoch in range(config.epoch):
@@ -96,7 +96,7 @@ if config.mode == 'training':
 			Xbatch = data_loader.queue_data_dict(
 				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize = config.resize, crop_cord = cord)
 
-			train_HR_files = [os.path.join(config.data_path, 'train/HR', os.path.basename(file_path))
+			train_HR_files = [os.path.join(config.data_path, 'train/HDR', os.path.basename(file_path))
 				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
 			
 			Ybatch = data_loader.queue_data_dict(
@@ -138,7 +138,8 @@ if config.mode == 'training':
 
 	# -------------------- Testing -------------------- #
 elif config.mode == 'testing':
-	model = SISR(sess, config, 'SISR')
+	model = HDR(sess, config, 'HDR')
+	print('The model built')
 	log_file = open(os.path.join(config.log_path, 'testing_log.txt'), 'w')
 	counter = 0
 
@@ -158,7 +159,7 @@ elif config.mode == 'testing':
 
 		_, config.height, config.width, _ = Xbatch.shape
 
-		test_HR_files = [os.path.join(config.data_path, 'test/HR', os.path.basename(file_path))
+		test_HR_files = [os.path.join(config.data_path, 'test/HDR', os.path.basename(file_path))
 			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
