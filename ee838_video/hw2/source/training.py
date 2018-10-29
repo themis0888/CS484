@@ -4,6 +4,11 @@ CUDA_VISIBLE_DEVICES=1 python -i training.py \
 --im_size=320 --batch_size=16 --ratio=1 \
 --mode=training --checkpoint_path=./01checkpoints \
 
+CUDA_VISIBLE_DEVICES=0 python -i training.py \
+--data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
+--batch_size=16 --ratio=1 \
+--mode=testing --checkpoint_path=./02checkpoints \
+
 """
 import tensorflow as tf
 import argparse
@@ -24,7 +29,7 @@ parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
-parser.add_argument('--save_freq', type=int, dest='save_freq', default=1000)
+parser.add_argument('--save_freq', type=int, dest='save_freq', default=200)
 parser.add_argument('--print_freq', type=int, dest='print_freq', default=50)
 parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.95)
 
@@ -38,10 +43,11 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
 sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 
 from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ptck
-import os, random
+import os, random, cv2
 import numpy as np
 from model import *
 import skimage.measure as skms
+import scipy.misc
 import data_loader
 import pdb
 
@@ -67,7 +73,7 @@ train_LR_files = [os.path.join(dp, f)
 
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'test/LDR' in dp]
+		for f in filenames if 'train/LDR' in dp]
 test_LR_files.sort()
 
 batch_size = config.batch_size
@@ -122,8 +128,7 @@ if config.mode == 'training':
 
 				log = ('Step: {:05d}'.format(counter) +
 					'\tCost: {:.3f}'.format(cost_val) +
-					'\tPSNR: {:2.1f}'.format(psnr/config.batch_size) +
-					'\tSSIM: {:.3f}'.format(ssim/config.batch_size))
+					'\tmPSNR: {:2.1f}'.format(psnr/config.batch_size))
 				print(log)
 				log_file.write(log + '\n')
 
@@ -155,15 +160,16 @@ elif config.mode == 'testing':
 		# Get the data batch in [batch_size, im_size] ndarray format.
 
 		Xbatch = data_loader.queue_data_dict(
-			test_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize= config.resize)
-
+			test_LR_files[i*batch_size:(i+1)*batch_size], [1088,1920], image_resize= config.resize)
+		print(test_LR_files[i*batch_size:(i+1)*batch_size])
+		print(Xbatch.shape)
 		_, config.height, config.width, _ = Xbatch.shape
 
-		test_HR_files = [os.path.join(config.data_path, 'test/HDR', os.path.basename(file_path))
+		test_HR_files = [os.path.join(config.data_path, 'train/HDR', os.path.basename(file_path))
 			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
-			test_HR_files, [config.height*config.ratio, config.width*config.ratio, channels],
+			test_HR_files, [1088,1920],
 			image_resize= config.resize)
 		
 		counter += 1
@@ -171,23 +177,37 @@ elif config.mode == 'testing':
 		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter, save_output = True)
 		psnr, ssim = 0, 0
 		Ybatch = Ybatch.astype('float32')
+
+		print(test_LR_files[i*batch_size:(i+1)*batch_size][0].split('.')[0])
 		for j in range(batch_size):
+			"""
 			temp_psnr = skms.compare_psnr(Ybatch[j], out_batch[j])
 			temp_ssim = skms.compare_ssim(Ybatch[j], out_batch[j], multichannel=True)
 			psnr += temp_psnr
 			ssim += temp_ssim
-
+			"""
+			# pdb.set_trace()
+			print(out_batch.shape)
+			out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
+			print(out_img.shape)
+			cv2.imwrite(os.path.join(config.sample_path, 
+				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), out_img)
+			cv2.imwrite(os.path.join(config.sample_path, 
+				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), out_img)
+			cv2.imwrite(os.path.join(config.sample_path, 'HDR_' +
+				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), Ybatch[0])
+			
+		"""
 		log = ('File: {:s}'.format(os.path.basename(test_LR_files[i])) +
-			'\tPSNR: {:2.1f}'.format(psnr) +
-			'\tSSIM: {:.3f}'.format(ssim))
+			'\tmPSNR: {:2.1f}'.format(psnr))
 		print(log)
 		total_psnr += psnr
 		total_ssim += ssim 
 		log_file.write(log + '\n')
+		"""
 
 	log = ('\nTotal summary \n'+
-		'Avg.PSNR = {:2.2f} \n'.format(total_psnr/num_file) +
-		'Avg.SSIM = {:.4f}'.format(total_ssim/num_file))
+		'Avg.mPSNR = {:2.2f} \n'.format(total_psnr/num_file))
 	print(log)
 	log_file.write(log + '\n')
 	log_file.close()

@@ -13,9 +13,9 @@
 
     ```shell
     CUDA_VISIBLE_DEVICES=1 python -i training.py \
-    --data_path=/home/siit/navi/data/input_data/mscoco/ \
-    --im_size=64 --batch_size=16 --ratio=2 \
-    --mode=training --checkpoint_path=./checkpoint \
+    --data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
+    --im_size=320 --batch_size=16 --ratio=1 \
+    --mode=training --checkpoint_path=./01checkpoints \
     ```
 
     You can find the log file from `./log`, output sample from `./sample`, and check point from `./checkpoints`
@@ -26,8 +26,8 @@
 
     ```shell
     CUDA_VISIBLE_DEVICES=1 python -i testing.py \
-    --data_path=/home/siit/navi/data/input_data/mscoco/ \
-    --im_size=64 --batch_size=16 --ratio=2 \
+    --data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
+    --batch_size=16 --ratio=1 \
     --mode=testing --checkpoint_path=./checkpoint \
     ```
 

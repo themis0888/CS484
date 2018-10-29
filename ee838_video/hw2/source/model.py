@@ -129,7 +129,7 @@ class HDR:
 		# -------------------- Objective -------------------- #
 
 		# L1 loss 
-		self.tau = 0.95
+		self.tau = 0.90
 		size = tf.stack([tf.shape(self.X)[0], 
 							tf.shape(self.X)[1], 
 							tf.shape(self.X)[2], 
