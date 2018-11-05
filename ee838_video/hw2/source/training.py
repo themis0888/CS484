@@ -1,13 +1,14 @@
 """
 CUDA_VISIBLE_DEVICES=1 python -i training.py \
---data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
+--data_path=/navi/data/input_data/ee838_hw2/ \
 --im_size=320 --batch_size=16 --ratio=1 \
 --mode=training --checkpoint_path=./01checkpoints \
 
 CUDA_VISIBLE_DEVICES=0 python -i training.py \
---data_path=/home/siit/navi/data/input_data/ee838_hw2/ \
---batch_size=16 --ratio=1 \
+--data_path=/navi/data/input_data/ee838_hw2/ \
+--batch_size=16 --ratio=1 --sample_path=01sample \
 --mode=testing --checkpoint_path=./02checkpoints \
+--resize true
 
 """
 import tensorflow as tf
@@ -49,6 +50,7 @@ from model import *
 import skimage.measure as skms
 import scipy.misc
 import data_loader
+import skimage.io as skio
 import pdb
 
 # -------------------- Model -------------------- #
@@ -190,11 +192,11 @@ elif config.mode == 'testing':
 			print(out_batch.shape)
 			out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
 			print(out_img.shape)
-			cv2.imwrite(os.path.join(config.sample_path, 
+			skio.imsave(os.path.join(config.sample_path, 
 				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), out_img)
-			cv2.imwrite(os.path.join(config.sample_path, 
+			skio.imsave(os.path.join(config.sample_path, 
 				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), out_img)
-			cv2.imwrite(os.path.join(config.sample_path, 'HDR_' +
+			skio.imsave(os.path.join(config.sample_path, 'HDR_' +
 				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), Ybatch[0])
 			
 		"""
@@ -205,6 +207,61 @@ elif config.mode == 'testing':
 		total_ssim += ssim 
 		log_file.write(log + '\n')
 		"""
+
+	log = ('\nTotal summary \n'+
+		'Avg.mPSNR = {:2.2f} \n'.format(total_psnr/num_file))
+	print(log)
+	log_file.write(log + '\n')
+	log_file.close()
+	
+
+else:
+	model = HDR(sess, config, 'HDR')
+	print('The model built')
+	log_file = open(os.path.join(config.log_path, config.mode + '_log.txt'), 'w')
+	counter = 0
+	
+	test_LR_files = [os.path.join(dp, f)
+		for dp, dn, filenames in os.walk(config.data_path)
+		for f in filenames]
+
+	num_file = len(test_LR_files)
+	batch_size = 1
+	total_batch = int(num_file / batch_size)
+	total_cost = 0
+	final_acc = 0
+	total_psnr = 0
+	total_ssim = 0
+	
+	for i in range(total_batch):
+		# Get the data batch in [batch_size, im_size] ndarray format.
+
+		Xbatch = data_loader.queue_data_dict(
+			test_LR_files[i*batch_size:(i+1)*batch_size], [1088,1920], image_resize= config.resize)
+		print(test_LR_files[i*batch_size:(i+1)*batch_size])
+		print(Xbatch.shape)
+		
+		Ybatch = Xbatch
+		
+		counter += 1
+
+		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter, save_output = True)
+		psnr, ssim = 0, 0
+		Ybatch = Ybatch.astype('float32')
+
+		print(test_LR_files[i*batch_size:(i+1)*batch_size][0].split('.')[0])
+		for j in range(batch_size):
+
+			# pdb.set_trace()
+			print(out_batch.shape)
+			# out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
+			out_img = out_batch[0]
+			print(out_img.shape)
+			skio.imsave(os.path.join(config.sample_path, 'hdr_' +
+				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), out_img)
+			skio.imsave(os.path.join(config.sample_path, 
+				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), Xbatch[0])
+			
 
 	log = ('\nTotal summary \n'+
 		'Avg.mPSNR = {:2.2f} \n'.format(total_psnr/num_file))

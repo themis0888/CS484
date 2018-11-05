@@ -1,4 +1,4 @@
-tensorflow-gpu==1.4
+tensorflow-gpu
 matplotlib
 tqdm
 pillow
@@ -8,3 +8,4 @@ imageio
 animeface
 pillow
 scikit-image
+opencv-python
