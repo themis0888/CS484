@@ -77,7 +77,7 @@ if config.model_name == 'vgg_16':
 
 	with slim.arg_scope(vgg.vgg_arg_scope()):
 		logits, endpoints = vgg.vgg_16(x, num_classes=config.n_classes, is_training=False)
-		feat_layer = endpoints['vgg_16/pool5']
+		feat_layer = endpoints['vgg_16/fc7']
 	all_vars = tf.all_variables()
 	var_to_restore = [v for v in all_vars if not v.name.startswith('vgg_16/fc8')]
 
@@ -139,7 +139,7 @@ if not os.path.exists(save_path):
 	os.mkdir(save_path)
 
 np.save(os.path.join(save_path, 
-	config.model_name + '_feature_pool5.npy'), feat_dict)
+	config.model_name + '_feature_fc7.npy'), feat_dict)
 
 
 print('Feature extraction completed')

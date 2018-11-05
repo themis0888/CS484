@@ -66,7 +66,7 @@ def search_similar_image(query, data_list, features, top_k = 4):
 def test():
 
 	feature_dict = np.load(os.path.join(config.meta_path, 
-		config.model_name + '_feature_pool5.npy')).item()
+		config.model_name + '_feature_fc7.npy')).item()
 
 	query_list = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path) 
@@ -77,13 +77,8 @@ def test():
 
 	data_list = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path) 
-		for f in filenames if ('test' in dp)] # and f not in query_filenames]
+		for f in filenames if ('hdr' in dp)] # and f not in query_filenames]
 
-	"""
-	sample_input = '/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'
-	skio.imsave('sample.png', skio.imread('/home/siit/navi/data/input_data/ukbench_small/test/image_00722.jpg'))
-	top_k_list = search_similar_image(sample_input, data_list, feature_dict)
-	"""
 
 	counter = 0
 	num_correct = 0
@@ -93,7 +88,7 @@ def test():
 		is_error = False
 		for entry, dist in zip(top_k_list, top_k_dist):
 			counter += 1
-			if int(os.path.basename(query)[6:-4]) // 4 == int(os.path.basename(entry)[6:-4]) // 4:
+			if int(os.path.basename(query)[10:-4]) // 4 == int(os.path.basename(entry)[10:-4]) // 4:
 				num_correct += 1
 			else:
 				# print(int(os.path.basename(query)[6:-4]) // 4, int(os.path.basename(entry)[6:-4]) // 4)
@@ -108,40 +103,6 @@ def test():
 
 	return err_case
 
-"""
-def visualize(err_case, query_list):
-def visualize(self, input_files, target_files, sample_path, counter, save_output = False, args = None):
-
-	num_input = min(3, len(input_files))
-	num_col = 3
-	fig=plt.figure(figsize=(16, 16))
-
-	output_files = self.sess.run(self.output_data, 
-		feed_dict={self.X: input_files, self.Y: target_files, self.training: True})
-	output_files = np.minimum(1, np.maximum(0, output_files))
-
-	for i in range(num_input):
-
-		input_file = input_files[i]
-		output_file = output_files[i]
-		target_file = target_files[i]
-		#pdb.set_trace()
-
-		fig.add_subplot(num_input, num_col, num_col*i+1)
-		plt.imshow(input_file)
-		fig.add_subplot(num_input, num_col, num_col*i+2)
-		plt.imshow(output_file)
-		fig.add_subplot(num_input, num_col, num_col*i+3)
-		plt.imshow(target_file)
-
-	plt.savefig(os.path.join(sample_path, '{0:06d}k_step.jpg'.format(counter)))
-	plt.close()
-	
-	if save_output:
-		skio.imsave(os.path.join(sample_path,'{:03d}.jpg'.format(counter)), output_file)
-
-	return output_files
-"""
 
 start = time.time()
 err_case = test()
