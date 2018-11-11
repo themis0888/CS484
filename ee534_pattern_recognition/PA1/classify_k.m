@@ -1,10 +1,9 @@
-function ErrRate = classify(W1_train, W2_train, W3_train, W1_test, W2_test, W3_test)
+function ErrRate = classify_k(W1_train, W2_train, W3_train, W1_test, W2_test, W3_test, k)
 
 tr_data = [W1_train; W2_train; W3_train];
 te_data = [W1_test; W2_test; W3_test];
 
-% K-value
-k = 150;
+% k = 150;
 
 % prediction list, returns the predicted class 
 predict_list = [];
@@ -21,10 +20,9 @@ for i = 1:num_data
     
     [~, ranking] = sort(dist, 'ascend');
     sum_W1 = sum(ranking(1:k)<=300);
-    sum_W2 = sum(301 <= ranking(1:k) & ranking(1:k) <= 600);
-    sum_W3 = sum(601 <= ranking(1:k));
+    sum_W2 = sum(301<=ranking(1:k) & ranking(1:k) <= 600);
+    sum_W3 = sum(601<=ranking(1:k));
     
-    % Number of closer data than Kth close point 
     decision = [sum_W1, sum_W2, sum_W3];
     [~, predict] = max(decision);
     predict_list = [predict_list, predict]; 
@@ -36,6 +34,7 @@ Error_W3 = 300 - sum(predict_list(601:900)==3);
 Error_total = Error_W1 + Error_W2 + Error_W3;
 
 ErrRate = Error_total/num_data;
+
 end
 
     
