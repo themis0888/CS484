@@ -14,19 +14,27 @@ num_data = data_size(1);
 for i = 1:num_data
     instance = te_data(i,:);
     % Euclidean distance
-    euc_dist = sqrt(sum((tr_data - instance).^2,2));
+    diff = abs(tr_data - instance);
+    euc_dist = sqrt(sum(diff.^2,2));
     % Manhattan distance
-    man_dist = sum(abs(tr_data - instance),2);
+    man_dist = sum(diff,2);
     dist = euc_dist;
     
+    % ranking of the close datapoints
     [~, ranking] = sort(dist, 'ascend');
-    sum_W1 = sum(ranking(1:k)<=300);
-    sum_W2 = sum(301 <= ranking(1:k) & ranking(1:k) <= 600);
-    sum_W3 = sum(601 <= ranking(1:k));
+    num_class = [0, 0, 0];
+    for j = 1:k
+        if ranking(j)<=300
+            num_class(1) = num_class(1) + 1;
+        elseif ranking(j) <= 600
+            num_class(2) = num_class(2) + 1;
+        else
+            num_class(3) = num_class(3) + 1;
+        end
+    end
     
-    % Number of closer data than Kth close point 
-    decision = [sum_W1, sum_W2, sum_W3];
-    [~, predict] = max(decision);
+    % prediction based on KNN 
+    [~, predict] = max(num_class);
     predict_list = [predict_list, predict]; 
 end
 
