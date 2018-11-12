@@ -51,19 +51,27 @@ class Deblur:
 
 		# take the input data and target data in flexible size 
 		self.X = tf.placeholder(tf.float32, [None, None, None, self.channels])
-		self.Y = tf.placeholder(tf.float32, 
-			[None, None, None, self.channels])
+		self.size_2 = tf.cast(tf.stack([tf.shape(self.X)[1]/2, tf.shape(self.X)[2]/2]), dtype = tf.int32)
+		self.size_3 = tf.cast(tf.stack([tf.shape(self.X)[1]/4, tf.shape(self.X)[2]/4]), dtype = tf.int32)
+		self.input_1 = self.X
+		self.input_2 = tf.image.resize_bicubic(self.X, self.size_2)
+		self.input_3 = tf.image.resize_bicubic(self.X, self.size_3)
+		self.Y = tf.placeholder(tf.float32, [None, None, None, self.channels])
+		self.target_1 = self.Y
+		self.target_2 = tf.image.resize_bicubic(self.Y, self.size_2)
+		self.target_3 = tf.image.resize_bicubic(self.Y, self.size_3)
 
 		stg = []	
 		# Stage 1
-		net = self.X
+		net = self.input_3
 		# 320 * 320 
 		net = L.conv(net, name="conv1_1", kh=5, kw=5, n_out=64)
 		for i in range(9):
 			net = self.residual_block(net, 64, 3)
 		net = L.conv(net, name="conv1_2", kh=5, kw=5, n_out=3, activation_fn = None)
-		self.output_1 = net
+		self.output_3 = net
 		net = L.deconv(net, name="deconv1_1", kh=3, kw=3, n_out=64)
+		net = tf.concat([self.input_2, net], axis = -1)
 
 		net = L.conv(net, name="conv2_1", kh=5, kw=5, n_out=64)
 		for i in range(9):
@@ -71,31 +79,28 @@ class Deblur:
 		net = L.conv(net, name="conv2_2", kh=5, kw=5, n_out=3, activation_fn = None)
 		self.output_2 = net
 		net = L.deconv(net, name="deconv2_1", kh=3, kw=3, n_out=64)
+		net = tf.concat([self.input_1, net], axis = -1)
 
 		net = L.conv(net, name="conv3_1", kh=5, kw=5, n_out=64)
 		for i in range(9):
 			net = self.residual_block(net, 64, 3)
 		net = L.conv(net, name="conv3_2", kh=5, kw=5, n_out=3, activation_fn = None)
-		self.output_3 = net
-		pdb.set_trace()
-		
-		self.hdr_log = net
+		self.output_1 = net
+		# pdb.set_trace()
 
 		# -------------------- Objective -------------------- #
 
-		# L1 loss 
-		self.tau = 0.90
-		size = tf.stack([tf.shape(self.X)[0], 
-							tf.shape(self.X)[1], 
-							tf.shape(self.X)[2], 
-							3])
-		alpha = tf.maximum(self.X - tf.ones(size)*self.tau, tf.zeros(size))
-		self.inv = tf.pow(tf.divide(0.6*self.X, tf.maximum(1.6-self.X, 1e-10)), 1.0/0.9)
-		self.output_data = (1-alpha)*self.inv + alpha*tf.exp(self.hdr_log)
-		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
+		self.output_data = self.output_1
+		self.loss_1 = (1/tf.cast((tf.shape(self.output_1)[1]*tf.shape(self.output_1)[2]*tf.shape(self.output_1)[3]), dtype = tf.float32)
+		* tf.losses.absolute_difference(self.target_1, self.output_1))
+		self.loss_2 = (1/tf.cast((tf.shape(self.output_2)[1]*tf.shape(self.output_2)[2]*tf.shape(self.output_2)[3]), dtype = tf.float32)
+		* tf.losses.absolute_difference(self.target_2, self.output_2))
+		self.loss_3 = (1/tf.cast((tf.shape(self.output_3)[1]*tf.shape(self.output_3)[2]*tf.shape(self.output_3)[3]), dtype = tf.float32)
+		* tf.losses.absolute_difference(self.target_3, self.output_3))
+		self.cost = self.loss_1 + self.loss_2 + self.loss_3 
 		self.var_to_restore = tf.global_variables()
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.0005).minimize(self.cost)
-		
+
 		self.total_var = tf.global_variables() 
 		init = tf.global_variables_initializer()
 		self.sess.run(init)
@@ -116,6 +121,7 @@ class Deblur:
 					kernel_size = [7,7], padding="same")
 		return conv_layer + input_layer
 
+	# b = sess.run(model.output_3, feed_dict = {model.X:np.ones([4,64,64,3]), model.Y:np.ones([4,256,256,3])})
 	def train(self, x_data, y_data, training=True):
 		return self.sess.run([self.optimizer, self.cost], 
 			feed_dict={self.X: x_data, self.Y: y_data, self.training: training})

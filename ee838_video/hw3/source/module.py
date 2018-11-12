@@ -6,7 +6,7 @@ import tensorflow.python.platform
 import tensorflow as tf
 from tensorflow.contrib.layers import xavier_initializer
 
-def conv(input_tensor, name, kw, kh, n_out, dw=1, dh=1, activation_fn=tf.nn.relu):
+def conv(input_tensor, name, kw, kh, n_out, dw=1, dh=1, activation_fn = tf.nn.relu):
 	n_in = input_tensor.get_shape()[-1].value
 	with tf.variable_scope(name):
 		weights = tf.get_variable('weights', [kh, kw, n_in, n_out], tf.float32, xavier_initializer())

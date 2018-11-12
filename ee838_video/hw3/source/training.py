@@ -1,11 +1,11 @@
 """
-CUDA_VISIBLE_DEVICES=1 python -i training.py \
---data_path=/navi/data/input_data/ee838_hw2/ \
---im_size=320 --batch_size=16 --ratio=1 \
+CUDA_VISIBLE_DEVICES=0 python -i training.py \
+--data_path=/home/siit/navi/data/input_data/ee838_hw3/ \
+--im_size=256 --batch_size=8 --ratio=1 \
 --mode=training --checkpoint_path=./01checkpoints \
 
 CUDA_VISIBLE_DEVICES=0 python -i training.py \
---data_path=/navi/data/input_data/ee838_hw2/ \
+--data_path=/home/siit/navi/data/input_data/ee838_hw3/ \
 --batch_size=16 --ratio=1 --sample_path=01sample \
 --mode=testing --checkpoint_path=./02checkpoints \
 --resize true
@@ -15,8 +15,8 @@ import tensorflow as tf
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/mscoco/')
-parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/mscoco/')
+parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/ee838_hw3/')
+parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/ee838_hw3/')
 parser.add_argument('--sample_path', type=str, dest='sample_path', default='./sample')
 parser.add_argument('--log_path', type=str, dest='log_path', default='./log')
 parser.add_argument('--model_path', type=str, dest='model_path', default='/shared/data/models/')
@@ -26,13 +26,13 @@ parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
 parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
-parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
+parser.add_argument('--lr', type=float, dest='lr', default=0.001)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
 parser.add_argument('--save_freq', type=int, dest='save_freq', default=200)
 parser.add_argument('--print_freq', type=int, dest='print_freq', default=50)
-parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.95)
+parser.add_argument('--memory_usage', type=float, dest='memory_usage', default=0.45)
 
 parser.add_argument('--re_train', type=lambda x: x.lower() in ('true', '1'), dest='re_train', default=False)
 parser.add_argument('--mode', type=str, dest='mode', default='training')
@@ -40,8 +40,8 @@ parser.add_argument('--load_checkpoint', type=bool, dest='load_checkpoint', defa
 parser.add_argument('--checkpoint_path', type=str, dest='checkpoint_path', default='./checkpoints')
 config, unparsed = parser.parse_known_args() 
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
-sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
+sess = tf.InteractiveSession()#config=tf.ConfigProto(gpu_options=gpu_options))
 
 from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ptck
 import os, random, cv2
@@ -71,11 +71,11 @@ if not os.path.exists(config.log_path):
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'train/LDR' in dp]
+		for f in filenames if ('train' in dp) and ('blur' in dp)]
 
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'train/LDR' in dp]
+		for f in filenames if ('test' in dp) and ('blur' in dp)]
 test_LR_files.sort()
 
 batch_size = config.batch_size
@@ -85,7 +85,8 @@ batch_size = config.batch_size
 
 if config.mode == 'training':
 	# -------------------- Training -------------------- #
-	model = HDR(sess, config, 'HDR')
+	model = Deblur(sess, config, 'Deblur')
+	print('Model built')
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
 	for epoch in range(config.epoch):
@@ -104,7 +105,7 @@ if config.mode == 'training':
 			Xbatch = data_loader.queue_data_dict(
 				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize = config.resize, crop_cord = cord)
 
-			train_HR_files = [os.path.join(config.data_path, 'train/HDR', os.path.basename(file_path))
+			train_HR_files = [file_path.replace('blur_gamma', 'sharp').replace('blur', 'sharp')
 				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
 			
 			Ybatch = data_loader.queue_data_dict(
@@ -122,6 +123,7 @@ if config.mode == 'training':
 				out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
 				psnr, ssim = 0, 0
 				Ybatch = Ybatch.astype('float32')
+
 				for i in range(config.batch_size):
 					temp_psnr = skms.compare_psnr(Ybatch[i], out_batch[i])
 					temp_ssim = skms.compare_ssim(Ybatch[i], out_batch[i], multichannel=True)
@@ -167,7 +169,7 @@ elif config.mode == 'testing':
 		print(Xbatch.shape)
 		_, config.height, config.width, _ = Xbatch.shape
 
-		test_HR_files = [os.path.join(config.data_path, 'train/HDR', os.path.basename(file_path))
+		test_HR_files = [os.path.join(config.data_path, 'train/', os.path.basename(file_path))
 			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
