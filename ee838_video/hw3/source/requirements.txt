@@ -1,0 +1,11 @@
+tensorflow-gpu
+matplotlib
+tqdm
+pillow
+scipy
+numpy
+imageio
+animeface
+pillow
+scikit-image
+opencv-python
