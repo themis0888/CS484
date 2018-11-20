@@ -61,8 +61,6 @@ class Deblur:
 		self.target_2 = tf.image.resize_bicubic(self.Y, self.size_2)
 		self.target_3 = tf.image.resize_bicubic(self.Y, self.size_3)
 
-		stg = []	
-		# Stage 1
 		net = self.input_3
 		# 320 * 320 
 		net = L.conv(net, name="conv1_1", kh=5, kw=5, n_out=64)
@@ -81,6 +79,7 @@ class Deblur:
 		net = L.deconv(net, name="deconv2_1", kh=3, kw=3, n_out=64)
 		net = tf.concat([self.input_1, net], axis = -1)
 
+		net = self.input_1
 		net = L.conv(net, name="conv3_1", kh=5, kw=5, n_out=64)
 		for i in range(9):
 			net = self.residual_block(net, 64, 3)
@@ -91,13 +90,16 @@ class Deblur:
 		# -------------------- Objective -------------------- #
 
 		self.output_data = self.output_1
-		self.loss_1 = (1/tf.cast((tf.shape(self.output_1)[1]*tf.shape(self.output_1)[2]*tf.shape(self.output_1)[3]), dtype = tf.float32)
-		* tf.losses.absolute_difference(self.target_1, self.output_1))
-		self.loss_2 = (1/tf.cast((tf.shape(self.output_2)[1]*tf.shape(self.output_2)[2]*tf.shape(self.output_2)[3]), dtype = tf.float32)
-		* tf.losses.absolute_difference(self.target_2, self.output_2))
-		self.loss_3 = (1/tf.cast((tf.shape(self.output_3)[1]*tf.shape(self.output_3)[2]*tf.shape(self.output_3)[3]), dtype = tf.float32)
-		* tf.losses.absolute_difference(self.target_3, self.output_3))
-		self.cost = self.loss_1 + self.loss_2 + self.loss_3 
+		self.loss_1 = (1 #tf.cast((tf.shape(self.output_1)[1]*tf.shape(self.output_1)[2]*tf.shape(self.output_1)[3]), dtype = tf.float32)
+		* tf.pow(tf.losses.absolute_difference(self.target_1, self.output_1),2))
+		"""
+		self.loss_2 = (1 #tf.cast((tf.shape(self.output_2)[1]*tf.shape(self.output_2)[2]*tf.shape(self.output_2)[3]), dtype = tf.float32)
+		* tf.pow(tf.losses.absolute_difference(self.target_2, self.output_2),2))
+		self.loss_3 = (1 #tf.cast((tf.shape(self.output_3)[1]*tf.shape(self.output_3)[2]*tf.shape(self.output_3)[3]), dtype = tf.float32)
+		* tf.pow(tf.losses.absolute_difference(self.target_3, self.output_3),2))
+		"""
+		self.cost = self.loss_1 # + self.loss_2 + self.loss_3 
+		
 		self.var_to_restore = tf.global_variables()
 		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.0005).minimize(self.cost)
 

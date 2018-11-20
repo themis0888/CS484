@@ -2,13 +2,13 @@
 CUDA_VISIBLE_DEVICES=0 python -i training.py \
 --data_path=/home/siit/navi/data/input_data/ee838_hw3/ \
 --im_size=256 --batch_size=8 --ratio=1 \
---mode=training --checkpoint_path=./01checkpoints \
+--mode=training --checkpoint_path=./04checkpoints \
 
-CUDA_VISIBLE_DEVICES=0 python -i training.py \
+CUDA_VISIBLE_DEVICES=1 python -i training.py \
 --data_path=/home/siit/navi/data/input_data/ee838_hw3/ \
---batch_size=16 --ratio=1 --sample_path=01sample \
---mode=testing --checkpoint_path=./02checkpoints \
---resize true
+--batch_size=16 --ratio=1 --sample_path=02sample \
+--mode=testing --checkpoint_path=./07checkpoints \
+
 
 """
 import tensorflow as tf
@@ -26,7 +26,7 @@ parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
 parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
-parser.add_argument('--lr', type=float, dest='lr', default=0.001)
+parser.add_argument('--lr', type=float, dest='lr', default=0.0001)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)
@@ -71,7 +71,7 @@ if not os.path.exists(config.log_path):
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if ('train' in dp) and ('blur' in dp)]
+		for f in filenames if ('blur' in dp)]
 
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
@@ -81,7 +81,8 @@ test_LR_files.sort()
 batch_size = config.batch_size
 
 # If you want to debug the model, write the following command on the console
-# log_ = model.sess.run([model.logits], feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
+# cost_ = model.sess.run([model.cost], feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
+# tar, out = model.sess.run([model.target_3, model.output_3], feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
 
 if config.mode == 'training':
 	# -------------------- Training -------------------- #
@@ -132,8 +133,13 @@ if config.mode == 'training':
 
 				log = ('Step: {:05d}'.format(counter) +
 					'\tCost: {:.3f}'.format(cost_val) +
-					'\tmPSNR: {:2.1f}'.format(psnr/config.batch_size))
+					'\tPSNR: {:2.1f}'.format(psnr/config.batch_size) + 
+					'\tSSIM: {:1.2f}'.format(ssim/config.batch_size))
 				print(log)
+				log = ('Step:, {:05d}, '.format(counter) +
+					'\tCost:, {:.3f}, '.format(cost_val) +
+					'\tPSNR:, {:2.1f}, '.format(psnr/config.batch_size) + 
+					'\tSSIM:, {:1.2f},'.format(ssim/config.batch_size))				
 				log_file.write(log + '\n')
 
 			# Save the model
@@ -147,7 +153,7 @@ if config.mode == 'training':
 
 	# -------------------- Testing -------------------- #
 elif config.mode == 'testing':
-	model = HDR(sess, config, 'HDR')
+	model = Deblur(sess, config, 'Deblur')
 	print('The model built')
 	log_file = open(os.path.join(config.log_path, 'testing_log.txt'), 'w')
 	counter = 0
@@ -159,18 +165,23 @@ elif config.mode == 'testing':
 	final_acc = 0
 	total_psnr = 0
 	total_ssim = 0
+	"""
+	test_LR_files = ['/home/siit/navi/data/input_data/ee838_hw3/test/GOPR0384_11_00/blur/000001.png', 
+	'/home/siit/navi/data/input_data/ee838_hw3/test/GOPR0384_11_05/blur/004001.png',
+	'/home/siit/navi/data/input_data/ee838_hw3/test/GOPR0385_11_01/blur/003011.png'] + test_LR_files
+	"""
 	
 	for i in range(total_batch):
 		# Get the data batch in [batch_size, im_size] ndarray format.
 
 		Xbatch = data_loader.queue_data_dict(
 			test_LR_files[i*batch_size:(i+1)*batch_size], [1088,1920], image_resize= config.resize)
-		print(test_LR_files[i*batch_size:(i+1)*batch_size])
-		print(Xbatch.shape)
+		#print(test_LR_files[i*batch_size:(i+1)*batch_size])
+		#print(Xbatch.shape)
 		_, config.height, config.width, _ = Xbatch.shape
 
-		test_HR_files = [os.path.join(config.data_path, 'train/', os.path.basename(file_path))
-			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
+		test_HR_files = [file_path.replace('blur_gamma', 'sharp').replace('blur', 'sharp')
+				for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
 			test_HR_files, [1088,1920],
@@ -184,31 +195,31 @@ elif config.mode == 'testing':
 
 		print(test_LR_files[i*batch_size:(i+1)*batch_size][0].split('.')[0])
 		for j in range(batch_size):
-			"""
+			
 			temp_psnr = skms.compare_psnr(Ybatch[j], out_batch[j])
 			temp_ssim = skms.compare_ssim(Ybatch[j], out_batch[j], multichannel=True)
 			psnr += temp_psnr
 			ssim += temp_ssim
-			"""
+			
 			# pdb.set_trace()
-			print(out_batch.shape)
-			out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
-			print(out_img.shape)
-			skio.imsave(os.path.join(config.sample_path, 
-				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), out_img)
+			#print(out_batch.shape)
+			#out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
+			out_img = out_batch[0]
+			#print(out_img.shape)
+
 			skio.imsave(os.path.join(config.sample_path, 
 				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), out_img)
-			skio.imsave(os.path.join(config.sample_path, 'HDR_' +
-				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0]).split('.')[0]+'.hdr'), Ybatch[0])
 			
-		"""
+			
+		
 		log = ('File: {:s}'.format(os.path.basename(test_LR_files[i])) +
-			'\tmPSNR: {:2.1f}'.format(psnr))
+			'\tPSNR: {:2.1f}'.format(psnr)+ 
+			'\tSSIM: {:1.2f}'.format(ssim))
 		print(log)
 		total_psnr += psnr
 		total_ssim += ssim 
 		log_file.write(log + '\n')
-		"""
+		
 
 	log = ('\nTotal summary \n'+
 		'Avg.mPSNR = {:2.2f} \n'.format(total_psnr/num_file))
@@ -216,58 +227,3 @@ elif config.mode == 'testing':
 	log_file.write(log + '\n')
 	log_file.close()
 	
-
-else:
-	model = HDR(sess, config, 'HDR')
-	print('The model built')
-	log_file = open(os.path.join(config.log_path, config.mode + '_log.txt'), 'w')
-	counter = 0
-	
-	test_LR_files = [os.path.join(dp, f)
-		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames]
-
-	num_file = len(test_LR_files)
-	batch_size = 1
-	total_batch = int(num_file / batch_size)
-	total_cost = 0
-	final_acc = 0
-	total_psnr = 0
-	total_ssim = 0
-	
-	for i in range(total_batch):
-		# Get the data batch in [batch_size, im_size] ndarray format.
-
-		Xbatch = data_loader.queue_data_dict(
-			test_LR_files[i*batch_size:(i+1)*batch_size], [1088,1920], image_resize= config.resize)
-		print(test_LR_files[i*batch_size:(i+1)*batch_size])
-		print(Xbatch.shape)
-		
-		Ybatch = Xbatch
-		
-		counter += 1
-
-		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter, save_output = True)
-		psnr, ssim = 0, 0
-		Ybatch = Ybatch.astype('float32')
-
-		print(test_LR_files[i*batch_size:(i+1)*batch_size][0].split('.')[0])
-		for j in range(batch_size):
-
-			# pdb.set_trace()
-			print(out_batch.shape)
-			# out_img = scipy.misc.imresize(out_batch[0], (1088, 1920, 3))
-			out_img = out_batch[0]
-			print(out_img.shape)
-			skio.imsave(os.path.join(config.sample_path, 'hdr_' +
-				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), out_img)
-			skio.imsave(os.path.join(config.sample_path, 
-				os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])), Xbatch[0])
-			
-
-	log = ('\nTotal summary \n'+
-		'Avg.mPSNR = {:2.2f} \n'.format(total_psnr/num_file))
-	print(log)
-	log_file.write(log + '\n')
-	log_file.close()
-
