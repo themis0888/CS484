@@ -57,10 +57,13 @@ class SISR:
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
 		
+		residual = input_data
 		# 4 residual block (the block structure defined below)
-		for i in range(4):
+		for i in range(9):
 			input_data = self.residual_block(input_data, 64, 3)
 		
+		input_data = residual + input_data
+	
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
 					kernel_size = [3,3], padding="same")
 

@@ -1,6 +1,6 @@
 """
 CUDA_VISIBLE_DEVICES=1 python -i training.py \
---data_path=/home/siit/navi/data/input_data/mscoco/ \
+--data_path=/navi/data/input_data/DIV2K/ \
 --im_size=64 --batch_size=16 --ratio=2 \
 --mode=training --checkpoint_path=./06checkpoints \
 
@@ -9,8 +9,8 @@ import tensorflow as tf
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, dest='data_path', default='/home/siit/navi/data/input_data/mscoco/')
-parser.add_argument('--meta_path', type=str, dest='meta_path', default='/home/siit/navi/data/meta_data/mscoco/')
+parser.add_argument('--data_path', type=str, dest='data_path', default='/navi/data/input_data/mscoco/')
+parser.add_argument('--meta_path', type=str, dest='meta_path', default='/navi/data/meta_data/mscoco/')
 parser.add_argument('--sample_path', type=str, dest='sample_path', default='./sample')
 parser.add_argument('--log_path', type=str, dest='log_path', default='./log')
 parser.add_argument('--model_path', type=str, dest='model_path', default='/shared/data/models/')
@@ -34,8 +34,8 @@ parser.add_argument('--load_checkpoint', type=bool, dest='load_checkpoint', defa
 parser.add_argument('--checkpoint_path', type=str, dest='checkpoint_path', default='./checkpoints')
 config, unparsed = parser.parse_known_args() 
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
-sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
+#gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=config.memory_usage)
+sess = tf.InteractiveSession()#config=tf.ConfigProto(gpu_options=gpu_options))
 
 from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ptck
 import os, random
@@ -63,13 +63,12 @@ if not os.path.exists(config.log_path):
 
 train_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'train/LR' in dp]
+		for f in filenames if 'train' in dp and 'LR_bicubic/X2' in dp and 'bin' not in dp]
 
 test_LR_files = [os.path.join(dp, f)
 		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'test/LR' in dp]
+		for f in filenames if 'test' in dp and 'LR_bicubic/X2' in dp and 'bin' not in dp]
 test_LR_files.sort()
-
 batch_size = config.batch_size
 
 # If you want to debug the model, write the following command on the console
@@ -96,7 +95,7 @@ if config.mode == 'training':
 			Xbatch = data_loader.queue_data_dict(
 				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize = config.resize, crop_cord = cord)
 
-			train_HR_files = [os.path.join(config.data_path, 'train/HR', os.path.basename(file_path))
+			train_HR_files = [file_path.replace('LR_bicubic/X2', 'HR').replace('x2', '')
 				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
 			
 			Ybatch = data_loader.queue_data_dict(
@@ -158,7 +157,7 @@ elif config.mode == 'testing':
 
 		_, config.height, config.width, _ = Xbatch.shape
 
-		test_HR_files = [os.path.join(config.data_path, 'test/HR', os.path.basename(file_path))
+		test_HR_files = [file_path.replace('LR_bicubic/X2', 'HR')
 			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
 		
 		Ybatch = data_loader.queue_data_dict(
