@@ -20,7 +20,7 @@ parser.add_argument('--n_classes', type=int, dest='n_classes', default=10)
 parser.add_argument('--resize', type=lambda x: x.lower() in ('true', '1'), dest='resize', default=False)
 parser.add_argument('--im_size', type=int, dest='im_size', default=64)
 parser.add_argument('--ratio', type=int, dest='ratio', default=2)
-parser.add_argument('--lr', type=float, dest='lr', default=0.0005)
+parser.add_argument('--lr', type=float, dest='lr', default=1e-4)
 parser.add_argument('--batch_size', type=int, dest='batch_size', default=16)
 
 parser.add_argument('--label_processed', type=bool, dest='label_processed', default=True)

@@ -51,15 +51,16 @@ class SISR:
 		self.X = tf.placeholder(tf.float32, [None, None, None, self.channels])
 		self.Y = tf.placeholder(tf.float32, 
 			[None, None, None, self.channels])
-			
+		rgb_mean=[0.4488, 0.4371, 0.4040]
+		rgb_std=[1.0, 1.0, 1.0]
 		# 1st convolutional layer
-		input_data = self.X
+		input_data = self.X - rgb_mean
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
 		
 		residual = input_data
 		# 4 residual block (the block structure defined below)
-		for i in range(9):
+		for i in range(16):
 			input_data = self.residual_block(input_data, 64, 3)
 		
 		input_data = residual + input_data
@@ -81,7 +82,7 @@ class SISR:
 		# L1 loss 
 		self.cost = tf.losses.absolute_difference(self.Y, self.output_data)
 		self.var_to_restore = tf.global_variables()
-		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.0005).minimize(self.cost)
+		self.optimizer = tf.train.AdamOptimizer(self.lr, epsilon=0.00005).minimize(self.cost)
 		
 	
 		self.total_var = tf.global_variables() 
