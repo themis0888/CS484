@@ -75,7 +75,7 @@ class SISR:
 		input_data = tf.nn.relu(tf.depth_to_space(input_data, 2, 'NHWC'))
 
 		self.output_data = tf.layers.conv2d(inputs=input_data, filters=3,
-					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
+					kernel_size = [7,7], padding="same") + rgb_mean
 
 		# -------------------- Objective -------------------- #
 

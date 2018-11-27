@@ -25,6 +25,22 @@ import scipy.misc
 import pickle
 
 
+# matrix resize function
+def mat_resize(npy_file, fine_size, interp = 'bicubic'):
+	img = npy_file
+	img_layer = []
+	for i in range(img.shape[-1]):
+		img_layer.append(np.zeros(fine_size))
+		img_layer[i] = scipy.misc.imresize(img[:,:,i], fine_size, interp = interp)
+		img_layer[i] = np.expand_dims(img_layer[i], axis = -1)
+		if i == 0:
+			img_concat = img_layer[i]
+		else:
+			img_concat = np.concatenate((img_concat, img_layer[i]), axis = -1)
+	return img_concat
+
+
+
 if not os.path.exists(config.output_path):
 	os.mkdir(config.output_path)
 if not os.path.exists(config.log_path):
@@ -88,7 +104,7 @@ for label_path in train_label_files:
     img = skio.imread(img_path)
 
     # Save the original HR file
-    bin_path = os.path.join(data_path, 'CityScape', 'CityScape_train_HR')
+    bin_path = os.path.join(data_path, 'CityScape', 'CityScape_train_HR', file_name)
     with open(bin_path, 'wb') as f:
         pickle.dump(img, f)
 
@@ -106,7 +122,7 @@ for label_path in train_label_files:
     
     counter += 1
     if counter % 10 == 0:
-        print('{:2.2f} Done'.format(counter/num_files))
+        print('{:2.1f}% Done'.format(counter/num_files * 100))
 
 
 
@@ -126,7 +142,7 @@ for label_path in test_label_files:
     img = skio.imread(img_path)
 
     # Save the original HR file
-    bin_path = os.path.join(data_path, 'CityScape', 'CityScape_test_HR')
+    bin_path = os.path.join(data_path, 'CityScape', 'CityScape_test_HR', file_name)
     with open(bin_path, 'wb') as f:
         pickle.dump(img, f)
 
@@ -147,19 +163,4 @@ for label_path in test_label_files:
         print('{:2.2f} Done'.format(counter/num_files))
 
 
-    
 
-
-
-def mat_resize(npy_file, fine_size):
-	img = npy_file
-	img_layer = []
-	for i in range(img.shape[-1]):
-		img_layer.append(np.zeros(fine_size))
-		img_layer[i] = scipy.misc.imresize(img[:,:,i], fine_size)
-		img_layer[i] = np.expand_dims(img_layer[i], axis = -1)
-		if i == 0:
-			img_concat = img_layer[i]
-		else:
-			img_concat = np.concatenate((img_concat, img_layer[i]), axis = -1)
-	return img_concat
