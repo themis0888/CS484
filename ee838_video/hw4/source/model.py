@@ -8,7 +8,7 @@ import skimage.io as skio
 import pdb
 
 
-class SISR:
+class Interpolation:
 	def __init__(self, sess, config, name):
 		self.sess = sess
 		self.name = name
@@ -21,36 +21,13 @@ class SISR:
 		self.window = 3
 		self.height = config.im_size
 		self.width = config.im_size
-		if config.model_mode == 'cbsr':
-			self.in_channels = 4
-		else: 
-			self.in_channels = 3
+		self.in_channels = 3
 		
 		self.out_channels = 3
-		if config.model_mode == 'cbsr':
-			self.data_mean = config.data_mean + [0]
-		else:
-			self.data_mean = config.data_mean
+		self.data_mean = config.data_mean
 		self.lr = config.lr
 		self.num_block = int(np.log(config.im_size/7)/np.log(2))
-		self.layers = ['conv1', 
-		'res1_conv1', 'res1_conv2', 'res2_conv1', 'res2_conv2', 
-		'res3_conv1', 'res3_conv2', 'res4_conv1', 'res4_conv2', 
-		'conv2', 'conv3', 'conv4']
-		self.filt = {
-			'conv1':64,
-			'res1_conv1':64,
-			'res1_conv2':64,
-			'res2_conv1':64,
-			'res2_conv2':64,
-			'res3_conv1':64,
-			'res3_conv2':64,
-			'res4_conv1':64,
-			'res4_conv2':64,
-			'conv2':64,
-			'conv3':256,
-			'conv4':3
-		}
+		self.filt = 64
 		self.ratio = config.ratio
 		self.im_size = [self.height, self.width, self.out_channels]
 		self.n = 5
@@ -116,9 +93,9 @@ class SISR:
 
 	# the structure of the residual block 
 	def residual_block(self, input_layer, num_filter, kernel):
-		conv_layer = tf.layers.conv2d(inputs=input_layer, filters=self.filt[self.layers[0]],
+		conv_layer = tf.layers.conv2d(inputs=input_layer, filters=self.filt,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
-		conv_layer = tf.layers.conv2d(inputs=conv_layer, filters=self.filt[self.layers[0]],
+		conv_layer = tf.layers.conv2d(inputs=conv_layer, filters=self.filt,
 					kernel_size = [7,7], padding="same")
 		return conv_layer + input_layer
 
@@ -135,7 +112,7 @@ class SISR:
 
 		num_input = min(3, len(input_files))
 		num_col = 3
-		fig=plt.figure(figsize=(16, 16))
+		fig=plt.figure(figsize=(16, num_input * 5 + 1))
 
 		output_files = self.sess.run(self.output_data, 
 			feed_dict={self.X: input_files, self.Y: target_files, self.training: True})

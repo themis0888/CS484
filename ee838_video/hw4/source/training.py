@@ -64,18 +64,14 @@ if not os.path.exists(config.sample_path):
 if not os.path.exists(config.log_path):
 	os.mkdir(config.log_path)
 
-train_LR_files = [os.path.join(dp, f)
-		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'train' in dp and 'LR_bicubic/X{}'.format(config.ratio) in dp]
 
-test_LR_files = [os.path.join(dp, f)
-		for dp, dn, filenames in os.walk(config.data_path)
-		for f in filenames if 'test' in dp and 'LR_bicubic/X{}'.format(config.ratio) in dp]
-test_LR_files.sort()
-batch_size = config.batch_size
 
 # If you want to debug the model, write the following command on the console
 # log_ = model.sess.run([model.logits], feed_dict={model.X: Xbatch, model.Y: Ybatch, model.training: True})
+
+# Create a VideoCapture object and read from input file
+# If the input is the camera, pass 0 instead of the video file name
+
 
 
 def testing(config, model, test_LR_files):
@@ -140,6 +136,33 @@ def testing(config, model, test_LR_files):
 
 
 def training(config, model, train_LR_files):
+	
+	cap = []
+	for index in range(1,5):
+		cap.append(cv2.VideoCapture('video{}.mp4'.format(index)))
+	
+	# Check if camera opened successfully
+	if (cap.isOpened()== False): 
+		print("Error opening video stream or file")
+	
+	# Read until video is completed
+	while(cap.isOpened()):
+		# Capture frame-by-frame
+		ret, frame = cap.read()
+		if ret == True:
+
+		# Display the resulting frame
+		cv2.imshow('Frame',frame)
+
+		# Press Q on keyboard to  exit
+		if cv2.waitKey(25) & 0xFF == ord('q'):
+			break
+
+		# Break the loop
+		else: 
+			break
+ 
+
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
 	for epoch in range(config.epoch):
@@ -198,6 +221,11 @@ def training(config, model, train_LR_files):
 				model.saver.save(sess, os.path.join(config.checkpoint_path, 
 					'vgg19_{0:03d}k'.format(int(counter/1000))))
 				print('Model ')
+	# When everything done, release the video capture object
+	cap.release()
+	
+	# Closes all the frames
+	cv2.destroyAllWindows()
 	
 
 if config.mode == 'training':
