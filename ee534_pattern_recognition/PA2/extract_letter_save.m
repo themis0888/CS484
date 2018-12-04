@@ -4,6 +4,10 @@ train = dir('DATA/TRAINING_DATA/gray scale/*.bmp');
 test = dir('DATA/TEST_DATA/*.bmp');
 train_data = {};
 test_data = {};
+dirpath = 'split';
+if dirpath(end) ~= '/', dirpath = [dirpath '/']; end
+if (exist(dirpath, 'dir') == 0), mkdir(dirpath); end
+
 for i = 1:length(train)
     train_data(end + 1) = {255 - imread(strcat('DATA/TRAINING_DATA/gray scale/','\',train(i).name))};
 end
@@ -43,7 +47,7 @@ for i = 1:length(train_data)
                 n1=imagen(min(r):max(r),min(c):max(c));
                 % Resize letter (same size of template)
                 img_r=imresize(n1,[200 200]);
-                imwrite(img_r,sprintf('data_split/%s%d.bmp',letter(i),n))
+                imwrite(img_r,sprintf('split/%s%d.bmp',letter(i),n))
                 imshow(img_r)
             end
 %         end
