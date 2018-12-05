@@ -1,9 +1,15 @@
 """
 CUDA_VISIBLE_DEVICES=0 python -i training.py \
---data_path=/navi/data/input_data/CityScape/ \
---im_size=64 --batch_size=16 --ratio=2 \
+--data_path=/home/siit/navi/data/input_data/60fps/ \
+--im_size=128 --batch_size=4 --ratio=2 \
 --mode=training --checkpoint_path=./01checkpoints \
 --model_mode=cbsr --sample_path=1127cbsr_tr \
+
+CUDA_VISIBLE_DEVICES=0 python -i training.py \
+--data_path=/home/siit/navi/data/input_data/60fps/ \
+--im_size=128 --batch_size=4 --ratio=2 \
+--mode=testing --checkpoint_path=./01checkpoints \
+--model_mode=cbsr --sample_path=1127cbsr_te \
 
 """
 import tensorflow as tf
@@ -75,81 +81,15 @@ if not os.path.exists(config.log_path):
 
 
 
-def testing(config, model, test_LR_files):
-	log_file = open(os.path.join(config.log_path, 'testing_log.txt'), 'w')
-	counter = 0
-
-	num_file = len(test_LR_files)
-	batch_size = 1
-	total_batch = int(num_file / batch_size)
-	total_cost = 0
-	final_acc = 0
-	total_psnr = 0
-	total_ssim = 0
-	
-	for i in range(total_batch):
-		# Get the data batch in [batch_size, im_size] ndarray format.
-
-		Xbatch = data_loader.queue_data_dict(
-			test_LR_files[i*batch_size:(i+1)*batch_size], im_size, norm = False,
-			image_resize= config.resize, data_format= 'bin', mode = config.model_mode)
-
-		_, config.height, config.width, _ = Xbatch.shape
-		file_name = os.path.basename(test_LR_files[i*batch_size:(i+1)*batch_size][0])
-
-		test_HR_files = [file_path.replace('LR_bicubic/X{}'.format(config.ratio), 'HR')
-			for file_path in test_LR_files[i*batch_size:(i+1)*batch_size]]
-		
-		Ybatch = data_loader.queue_data_dict(
-			test_HR_files, [config.height*config.ratio, config.width*config.ratio, channels],
-			image_resize= config.resize, data_format= 'bin', mode = config.model_mode)
-		
-		counter += 1
-
-		out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, 
-			counter, save_output = True, file_name = file_name)
-
-		
-		psnr, ssim = 0, 0
-		Ybatch = Ybatch.astype('float32')
-		for j in range(batch_size):
-			temp_psnr = skms.compare_psnr(Ybatch[j], out_batch[j])
-			temp_ssim = skms.compare_ssim(Ybatch[j], out_batch[j], multichannel=True)
-			psnr += temp_psnr
-			ssim += temp_ssim
-
-		log = ('File: {:s}'.format(os.path.basename(test_LR_files[i])) +
-			'\tPSNR: {:2.1f}'.format(psnr) +
-			'\tSSIM: {:.3f}'.format(ssim))
-		print(log)
-		total_psnr += psnr
-		total_ssim += ssim 
-		log_file.write(log + '\n')
-	
-		# pdb.set_trace()
-
-	log = ('\nTotal summary \n'+
-		'Avg.PSNR = {:2.2f} \n'.format(total_psnr/num_file) +
-		'Avg.SSIM = {:.4f}'.format(total_ssim/num_file))
-	print(log)
-	log_file.write(log + '\n')
-	log_file.close()
-
-
-def training(config, model, train_LR_files):
+def testing(config, model, train_LR_files):
 	data_path = config.data_path
-	cap = [None for i in range(4)]
+	imsize = config.im_size
+	cap = []
 	for index in range(1,5):
 		cap.append(cv2.VideoCapture(
 			os.path.join(data_path, 'video{}.mp4'.format(index))))
 
-	ret, frame = cap.read()
-
-	for index in range(1,5):
-		
-		cap.append(cv2.VideoCapture(
-			os.path.join(data_path, 'video{}.mp4'.format(index))))
-
+	batch_size = 4
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
 	for epoch in range(config.epoch):
@@ -162,31 +102,108 @@ def training(config, model, train_LR_files):
 		total_cost = 0
 		final_acc = 0
 
-		for i in range(total_batch):
+		for j in range(total_batch):
 			# Get the data batch in [batch_size, im_size] ndarray format.
 
-			index_list = list(range(1,5))
+			index_list = list(range(4))
 			random.shuffle(index_list)
 
 			frame1, frame2, frame3 = [], [], []
-			ret, frame1 = cap[index_list(i)]
+			# pdb.set_trace()
+
 			for i in range(4):
 				ret, temp = cap[i].read()
-				frame1.append(np.expand_dims(temp, axis = -1))
+				frame1.append(np.expand_dims(temp, axis = 0)/255)
 				ret, temp = cap[i].read()
-				frame2.append(np.expand_dims(temp, axis = -1))
+				frame2.append(np.expand_dims(temp, axis = 0)/255)
 				ret, temp = cap[i].read()
-				frame3.append(np.expand_dims(temp, axis = -1))
+				frame3.append(np.expand_dims(temp, axis = 0)/255)
 
-			Xbatch = np.concatenate((np.concatenate((frame1[index_list[0]], frame3[index_list[0]]), axis = 2),
-									np.concatenate((frame1[index_list[1]], frame3[index_list[1]]), axis = 2),
-									np.concatenate((frame1[index_list[2]], frame3[index_list[2]]), axis = 2),
-									np.concatenate((frame1[index_list[3]], frame3[index_list[3]]), axis = 2)), axis =-1)
+			Xbatch = np.concatenate((frame1[index_list[0]], frame3[index_list[0]]), axis = 3)
+			Ybatch = frame2[index_list[0]]
+									
+
+			frame1, frame2, frame3 = [], [], []
+			coord = (int(np.random.uniform(0,1)*(720-imsize)), int(np.random.uniform(0,1)*(1280-imsize))) 
+			# train
+			
+			# total_cost += cost_val
+
+			counter += 1
+
+			# visualize the current recovery process and print the log
+			if np.mod(counter, 1) == 0:
+				
+				out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
+				psnr, ssim = 0, 0
+				Ybatch = Ybatch.astype('float32')
+				
+				i = 0
+				temp_psnr = skms.compare_psnr(Ybatch[i], out_batch[i])
+				temp_ssim = skms.compare_ssim(Ybatch[i], out_batch[i], multichannel=True)
+				psnr += temp_psnr
+				ssim += temp_ssim
+
+				log = ('Step: {:05d}'.format(counter) +
+					'\tPSNR: {:2.1f}'.format(psnr) +
+					'\tSSIM: {:.3f}'.format(ssim))
+				print(log)
+				log_file.write(log + '\n')
+
+	
+
+
+def training(config, model, train_LR_files):
+	data_path = config.data_path
+	imsize = config.im_size
+	cap = []
+	for index in range(1,5):
+		cap.append(cv2.VideoCapture(
+			os.path.join(data_path, 'video{}.mp4'.format(index))))
+
+	batch_size = 4
+	counter = 0
+	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
+	for epoch in range(config.epoch):
+
+		num_file = len(train_LR_files)
+		if num_file ==0:
+			break
+
+		total_batch = int(num_file / batch_size)
+		total_cost = 0
+		final_acc = 0
+
+		for j in range(total_batch):
+			# Get the data batch in [batch_size, im_size] ndarray format.
+
+			index_list = list(range(4))
+			random.shuffle(index_list)
+
+			frame1, frame2, frame3 = [], [], []
+			# pdb.set_trace()
+
+			for i in range(4):
+				ret, temp = cap[i].read()
+				frame1.append(np.expand_dims(temp, axis = 0)/255)
+				ret, temp = cap[i].read()
+				frame2.append(np.expand_dims(temp, axis = 0)/255)
+				ret, temp = cap[i].read()
+				frame3.append(np.expand_dims(temp, axis = 0)/255)
+
+			Xbatch = np.concatenate((np.concatenate((frame1[index_list[0]], frame3[index_list[0]]), axis = 3),
+									np.concatenate((frame1[index_list[1]], frame3[index_list[1]]), axis = 3),
+									np.concatenate((frame1[index_list[2]], frame3[index_list[2]]), axis = 3),
+									np.concatenate((frame1[index_list[3]], frame3[index_list[3]]), axis = 3)), axis = 0)
 			Ybatch = np.concatenate((frame2[index_list[0]],
 									frame2[index_list[1]], 
 									frame2[index_list[2]], 
-									frame2[index_list[3]]), axis =-1)
+									frame2[index_list[3]]), axis = 0)
 
+			frame1, frame2, frame3 = [], [], []
+			coord = (int(np.random.uniform(0,1)*(720-imsize)), int(np.random.uniform(0,1)*(1280-imsize))) 
+			Xbatch = Xbatch[:, coord[0]:coord[0]+128, coord[1]:coord[1]+128, :]
+			Ybatch = Ybatch[:, coord[0]:coord[0]+128, coord[1]:coord[1]+128, :]
 			# train
 			_, cost_val = model.train(Xbatch, Ybatch)
 			total_cost += cost_val
@@ -199,7 +216,9 @@ def training(config, model, train_LR_files):
 				out_batch = model.visualize(Xbatch, Ybatch, config.sample_path, counter)
 				psnr, ssim = 0, 0
 				Ybatch = Ybatch.astype('float32')
+				
 				for i in range(config.batch_size):
+					# pdb.set_trace()
 					temp_psnr = skms.compare_psnr(Ybatch[i], out_batch[i])
 					temp_ssim = skms.compare_ssim(Ybatch[i], out_batch[i], multichannel=True)
 					psnr += temp_psnr
@@ -219,11 +238,7 @@ def training(config, model, train_LR_files):
 				model.saver.save(sess, os.path.join(config.checkpoint_path, 
 					'vgg19_{0:03d}k'.format(int(counter/1000))))
 				print('Model ')
-	# When everything done, release the video capture object
-	cap.release()
 	
-	# Closes all the frames
-	cv2.destroyAllWindows()
 	
 
 if config.mode == 'training':

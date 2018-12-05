@@ -41,7 +41,7 @@ class Interpolation:
 		rgb_std=[1.0, 1.0, 1.0]
 		
 		# 1st convolutional layer
-		input_data = self.X 
+		input_data = self.X
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
 		
@@ -111,8 +111,8 @@ class Interpolation:
 		output_files = np.minimum(1, np.maximum(0, output_files))
 		
 		for i in range(num_input):
-
-			input_file = input_files[i]
+			#pdb.set_trace()
+			input_file = input_files[i,:,:,:3]
 			output_file = output_files[i]
 			target_file = target_files[i]
 			#pdb.set_trace()
