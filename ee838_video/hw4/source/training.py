@@ -43,6 +43,7 @@ sess = tf.InteractiveSession()#config=tf.ConfigProto(gpu_options=gpu_options))
 from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file as ptck
 import os, random
 import numpy as np
+import cv2
 from model import *
 import skimage.measure as skms
 import data_loader
@@ -136,32 +137,18 @@ def testing(config, model, test_LR_files):
 
 
 def training(config, model, train_LR_files):
-	
-	cap = []
+	data_path = config.data_path
+	cap = [None for i in range(4)]
 	for index in range(1,5):
-		cap.append(cv2.VideoCapture('video{}.mp4'.format(index)))
-	
-	# Check if camera opened successfully
-	if (cap.isOpened()== False): 
-		print("Error opening video stream or file")
-	
-	# Read until video is completed
-	while(cap.isOpened()):
-		# Capture frame-by-frame
-		ret, frame = cap.read()
-		if ret == True:
+		cap.append(cv2.VideoCapture(
+			os.path.join(data_path, 'video{}.mp4'.format(index))))
 
-		# Display the resulting frame
-		cv2.imshow('Frame',frame)
+	ret, frame = cap.read()
 
-		# Press Q on keyboard to  exit
-		if cv2.waitKey(25) & 0xFF == ord('q'):
-			break
-
-		# Break the loop
-		else: 
-			break
- 
+	for index in range(1,5):
+		
+		cap.append(cv2.VideoCapture(
+			os.path.join(data_path, 'video{}.mp4'.format(index))))
 
 	counter = 0
 	log_file = open(os.path.join(config.log_path, 'training_log.txt'), 'w')
@@ -177,17 +164,28 @@ def training(config, model, train_LR_files):
 
 		for i in range(total_batch):
 			# Get the data batch in [batch_size, im_size] ndarray format.
-			cord = np.random.rand(2, batch_size)
-			Xbatch = data_loader.queue_data_dict(
-				train_LR_files[i*batch_size:(i+1)*batch_size], im_size, image_resize = config.resize, 
-				crop_cord = cord, data_format= 'bin', mode = config.model_mode)
 
-			train_HR_files = [file_path.replace('LR_bicubic/X{}'.format(config.ratio), 'HR')
-				for file_path in train_LR_files[i*batch_size:(i+1)*batch_size]]
-			
-			Ybatch = data_loader.queue_data_dict(
-				train_HR_files, target_size, image_resize = config.resize, crop_cord = cord, 
-				data_format= 'bin', mode = config.model_mode)
+			index_list = list(range(1,5))
+			random.shuffle(index_list)
+
+			frame1, frame2, frame3 = [], [], []
+			ret, frame1 = cap[index_list(i)]
+			for i in range(4):
+				ret, temp = cap[i].read()
+				frame1.append(np.expand_dims(temp, axis = -1))
+				ret, temp = cap[i].read()
+				frame2.append(np.expand_dims(temp, axis = -1))
+				ret, temp = cap[i].read()
+				frame3.append(np.expand_dims(temp, axis = -1))
+
+			Xbatch = np.concatenate((np.concatenate((frame1[index_list[0]], frame3[index_list[0]]), axis = 2),
+									np.concatenate((frame1[index_list[1]], frame3[index_list[1]]), axis = 2),
+									np.concatenate((frame1[index_list[2]], frame3[index_list[2]]), axis = 2),
+									np.concatenate((frame1[index_list[3]], frame3[index_list[3]]), axis = 2)), axis =-1)
+			Ybatch = np.concatenate((frame2[index_list[0]],
+									frame2[index_list[1]], 
+									frame2[index_list[2]], 
+									frame2[index_list[3]]), axis =-1)
 
 			# train
 			_, cost_val = model.train(Xbatch, Ybatch)
@@ -230,14 +228,14 @@ def training(config, model, train_LR_files):
 
 if config.mode == 'training':
 	# -------------------- Training -------------------- #
-	model = SISR(sess, config, 'SISR')
-	training(config, model, train_LR_files)
+	model = Interpolation(sess, config, 'SISR')
+	training(config, model, list(range(50000)))
 	
 
 	# -------------------- Testing -------------------- #
 elif config.mode == 'testing':
-	model = SISR(sess, config, 'SISR')
-	testing(config, model, test_LR_files)
+	model = Interpolation(sess, config, 'SISR')
+	testing(config, model, list(range(50000)))
 
 
 

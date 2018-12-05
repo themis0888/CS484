@@ -21,7 +21,7 @@ class Interpolation:
 		self.window = 3
 		self.height = config.im_size
 		self.width = config.im_size
-		self.in_channels = 3
+		self.in_channels = 6
 		
 		self.out_channels = 3
 		self.data_mean = config.data_mean
@@ -41,7 +41,7 @@ class Interpolation:
 		rgb_std=[1.0, 1.0, 1.0]
 		
 		# 1st convolutional layer
-		input_data = self.X - rgb_mean
+		input_data = self.X 
 		input_data = tf.layers.conv2d(inputs=input_data, filters=64,
 					kernel_size = [7,7], padding="same", activation=tf.nn.relu)
 		
@@ -59,17 +59,9 @@ class Interpolation:
 					kernel_size = [3,3], padding="same")
 		
 		# shuffling layer 
-		input_data = tf.nn.relu(tf.depth_to_space(input_data, 2, 'NHWC'))
-
-		if self.ratio == 4:
-			input_data = tf.layers.conv2d(inputs=input_data, filters=256,
-					kernel_size = [3,3], padding="same")
-
-			input_data = tf.nn.relu(tf.depth_to_space(input_data, 2, 'NHWC'))
-	
 
 		self.output_data = tf.layers.conv2d(inputs=input_data, filters=3,
-					kernel_size = [7,7], padding="same") + rgb_mean[:self.out_channels]
+					kernel_size = [3,3], padding="same")
 
 		# -------------------- Objective -------------------- #
 
